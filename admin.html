@@ -566,12 +566,17 @@ let diasFechados = [];
 let bloqueios = {};
 
 const PRECOS = {
-  "Corte": 50,
-  "Barba": 30,
-  "Corte + Barba": 80,
-  "Navalha": 110,
-  "Sombrancelha": 15,
-  "Barboterapia": 40
+  "Corte":25,
+  "Pezinho":10,
+  "Corte Simples": 25,
+  "Corte Disfarçado":35,
+  "Corte Máq E Tes":35,
+  "Barba Simples": 15,
+  "Barba Modelada":25,
+  "Pigmentação": 20,
+  "Reflexo": 50,
+  "Descoloração": 70,
+  "Corte Disfarçado + Barba": 50
 };
 function formatarDataLocal(dataISO) {
   if (!dataISO) return "";
@@ -1122,7 +1127,8 @@ function mostrarAgendaHoje() {
           lista.push({
             horario,
             nome,
-            servico
+            servico,
+            prof
           });
         }
       });
@@ -1139,9 +1145,10 @@ function mostrarAgendaHoje() {
     lista.forEach(item => {
       html += `
         <div class="item-agenda">
-          <strong>${item.horario}</strong><br>
+          <strong>${item.horario}</strong> - ${item.prof}<br>
           👤 ${item.nome}<br>
-          🛠️ ${item.servico}
+          🛠️ ${item.servico}<
+          
         </div>
       `;
     });

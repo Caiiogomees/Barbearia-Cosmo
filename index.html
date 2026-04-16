@@ -294,7 +294,12 @@ button {
   <div class="card fade" id="horarios" style="display:none;"></div>
   <div class="card fade" id="resumo" style="display:none;"></div>
   <div class="card fade" id="pacotes"style="display:none;"></div>
+  <div id="confirmacao" style="display:none; margin-top:20px; font-weight:bold; color:#25D366;">
+  ✅ Obrigado pelo agendamento! Finalize pelo WhatsApp.
+
 </div>
+
+
 
 <script>
 let agenda = {};
@@ -762,7 +767,21 @@ async function confirmarAgendamento() {
 
   alert("✅ Horário reservado com sucesso!");
 }
+function finalizarAgendamento() {
+  // mostra mensagem na tela
+  document.getElementById("confirmacao").style.display = "block";
 
+  // esconde conteúdo (opcional)
+  document.querySelector(".container").style.opacity = "0.3";
+
+  // desativa botões
+  document.querySelectorAll("button").forEach(btn => {
+    btn.disabled = true;
+  });
+
+  // abre WhatsApp
+  window.open(linkWhatsapp, "_blank");
+}
 function enviarWhats() {
   const nome = document.getElementById("nomeCliente").value.trim();
   if(!nome) return alert("👤 Digite seu nome completo!");
