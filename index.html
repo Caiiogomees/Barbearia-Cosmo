@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barbearia Cosmo</title>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBBq2T_Izpp1Es1Ch-o7hTRcDzEZ0P17Ng",
+    authDomain: "barbearia-cosmo.firebaseapp.com",
+    projectId: "barbearia-cosmo",
+    storageBucket: "barbearia-cosmo.firebasestorage.app",
+    messagingSenderId: "883807366405",
+    appId: "1:883807366405:web:b6e85a00c951a0e5745b6c"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+</script>
+
+<style>
+:root {
+  --marrom-escuro: #59251B;
+  --marrom-medio: #A67360;
+  --vinho: #260101;
+  --cinza-claro: #F2F2F2;
+  --preto: #0D0D0D;
+  --dourado: #ffffff;
+}
+
+
+body {
+  font-family: Arial, sans-serif;
+  background: 
+    linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.85)),
+    url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=1400'); /* sua imagem de fundo */
+
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+
+  color: white;
+  text-align: center;
+  min-height: 100vh;
+  margin: 0;
+
+  position: relative;
+}
+body::after {
+  content: ""; 
+  
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  
+  width: 400px; /* ajusta tamanho aqui */
+  height: 400px;
+
+  background: url('logo.png') no-repeat center;
+  background-size: contain;
+
+  transform: translate(-50%, -50%);
+  
+  opacity: 0.08; /* transparência elegante */
+  
+  pointer-events: none;
+  z-index: 1;
+}
+/* 🔥 GRID DE HORÁRIOS */
+.horarios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* 🔥 BOTÃO HORÁRIO PREMIUM */
+.horario-btn {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(166,115,96,0.4);
+  background: rgba(20,20,20,0.8);
+  color: #25D366;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* hover elegante */
+.horario-btn:hover {
+  transform: scale(1.05);
+  background: linear-gradient(45deg, #A67360, #59251B);
+  color: #fff;
+}
+
+/* ocupado */
+.horario-btn.ocupado {
+  color: #e74c3c;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* bloqueado */
+.horario-btn.bloqueado {
+  color: #999;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.container{
+  position: relative;
+  z-index: 10;
+}
+
+.container {
+  max-width: 420px;
+  margin: auto;
+  padding: 20px;
+  position: relative;
+  z-index: 10;
+}
+
+h1 { 
+  color: var(--dourado);
+}
+
+.card {
+  background: rgba(13,13,13,0.9);
+  border: 1px solid rgba(166,115,96,0.4);
+  padding: 25px;
+  margin: 15px 0;
+  border-radius: 20px;
+}
+
+button {
+  width: 100%;
+  padding: 16px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* 🔥 BOTÕES NOVOS */
+.opcao { 
+  background: linear-gradient(45deg, var(--marrom-medio), var(--marrom-escuro)); 
+  color: white; 
+}
+
+.whatsapp { 
+  background: linear-gradient(45deg, #25d366, #128C7E); 
+}
+
+.voltar { 
+  background: #333; 
+  color: white; 
+  width: auto;
+  padding: 10px 20px;
+}
+
+.calendario {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+}
+
+.dia {
+  min-width: 70px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #111;
+  border: 1px solid var(--marrom-medio);
+  cursor: pointer;
+}
+
+.dia.ativo {
+  background: linear-gradient(45deg, var(--marrom-medio), var(--vinho));
+  color: white;
+}
+
+.dia.fechado {
+  background: #333;
+  color: #aaa;
+}
+
+.input-nome {
+  background: #111;
+  border: 1px solid var(--marrom-medio);
+  padding: 12px;
+  border-radius: 10px;
+  color: white;
+  width: 100%;
+}
+#resumo {
+  display: none;
+}
+/*  OTIMIZAÇÕES CELULAR */
+@media (max-width: 480px) {
+  body {
+    padding: 10px;
+    background-attachment: scroll; /* Evita lag no scroll */
+  }
+  
+  .container {
+    max-width: 100%;
+    padding: 15px 10px;
+    margin: 0;
+  }
+  
+  h1 {
+    font-size: 24px;
+    margin: 10px 0;
+  }
+  
+  .card {
+    padding: 20px 15px;
+    margin: 10px 0;
+  }
+  
+  button {
+    padding: 18px 16px;
+    font-size: 18px; /* Touch-friendly */
+    margin: 6px 0;
+    min-height: 56px; /* Altura mínima Apple */
+  }
+  
+  .calendario {
+    padding: 10px 0;
+    gap: 8px;
+  }
+  
+  .dia {
+    min-width: 65px;
+    padding: 10px 8px;
+    font-size: 14px;
+  }
+  
+  .horarios-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+  }
+  
+  .horario-btn {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+  
+  .input-nome {
+    padding: 16px;
+    font-size: 18px;
+    margin: 12px 0;
+  }
+  
+  /* Esconde logo de fundo em celular pequeno */
+  body::after {
+    width: 250px;
+    height: 250px;
+    opacity: 0.05;
+  }
+}
+
+/* Safe area para notch/iPhone */
+@supports(padding: max(0px)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <img src="logo-bg.png" style="width:200px; margin-bottom:10px;"> 
+  <h1>✂️ Barbearia Cosmo</h1>
+  <p style="margin: -10px 0 20px 0; opacity: 0.9;">Agende seu horário ja!</p>
+
+  <div class="card fade">
+    <h3>📅 Escolha o dia</h3>
+    <div class="calendario" id="calendario"></div>
+    <p id="dataEscolhida" style="margin-top: 10px; font-weight: bold;"></p>
+  </div>
+
+  <div class="card fade" id="servicos"></div>
+  <div class="card fade" id="profissionais" style="display:none;"></div>
+  <div class="card fade" id="horarios" style="display:none;"></div>
+  <div class="card fade" id="resumo" style="display:none;"></div>
+  <div class="card fade" id="pacotes"style="display:none;"></div>
+</div>
+
+<script>
+let agenda = {};
+let diasFechados = [];
+let dataSelecionada = "";
+let nomeServico = "";
+let profissional = "";
+let horario = "";
+let bloqueios = {};
+
+
+let pacotes = [];
+
+function escutarPacotesTempoReal() {
+  db.collection("pacotes").onSnapshot(snapshot => {
+    pacotes = [];
+
+    snapshot.forEach(doc => {
+      pacotes.push(doc.data());
+    });
+
+    mostrarPacotes();
+  });
+}
+
+function mostrarPacotes() {
+  const div = document.getElementById("pacotes");
+
+  if(pacotes.length === 0){
+    div.style.display = "none";
+    return;
+  }
+
+  div.style.display = "block";
+  div.innerHTML = "<h3>🔥 Pacotes Mensais</h3>";
+
+  pacotes.forEach(p => {
+    const card = document.createElement("div");
+
+    card.style.background = "#111";
+    card.style.padding = "15px";
+    card.style.borderRadius = "12px";
+    card.style.margin = "10px 0";
+    card.style.border = "1px solid #A67360";
+
+    card.innerHTML = `
+      <h4 style="color:#d4af37;">${p.nome}</h4>
+      <p style="font-size:14px; opacity:0.9;">${p.descricao}</p>
+      ${p.preco ? `<strong style="color:#25D366;">R$ ${p.preco}</strong>` : ""}
+      <br><br>
+      <button class="opcao" onclick="interessePacote('${p.nome}', ${p.preco})">
+        Assinar Pacote
+      </button>
+    `;
+
+    div.appendChild(card);
+  });
+}
+
+async function interessePacote(nomePacote, preco){
+  const nome = prompt("Digite seu nome completo!:");
+
+  if(!nome) return alert("👤 Nome obrigatório!");
+
+  // 🔥 SALVA NO FIREBASE
+  await db.collection("assinaturas").add({
+    nome: nome,
+    pacote: nomePacote,
+    preco: preco || 0,
+    validade: "2026-05-10",
+    usos: 0,
+    status: "pendente",
+    data: new Date().toISOString()
+  });
+
+  // 🔥 MENSAGEM WHATSAPP
+  const msg = `🔥 *ASSINATURA DE PACOTE*\n\n` +
+              `👤 Nome: ${nome}\n` +
+              `📦 Pacote: ${nomePacote}\n` +
+              `💰 Valor: R$ ${preco}\n\n` +
+              `📲 Envie o comprovante do PIX para confirmar.`;
+
+  window.open(`https://wa.me/5521999999999?text=${encodeURIComponent(msg)}`, '_blank');           // ALTERE AQUI TBM
+
+  alert("✅ Pedido enviado! Envie o comprovante no WhatsApp.PIX:xxxx-xxxx");
+}
+async function verificarAssinatura(nomeCliente){
+  const snapshot = await db.collection("assinaturas")
+    .where("nome", "==", nomeCliente)
+    .get();
+
+  if(snapshot.empty) return false;
+
+  let valido = false;
+
+  snapshot.forEach(doc => {
+    const a = doc.data();
+
+    if(a.status === "pago" && a.validade){
+      const hoje = new Date();
+      const validade = new Date(a.validade);
+
+      if(validade >= hoje){
+        valido = true;
+      }
+    }
+  });
+
+  return valido;
+}
+async function verificarLimite(nomeCliente){
+  const snapshot = await db.collection("assinaturas")
+    .where("nome", "==", nomeCliente)
+    .get();
+
+  if(snapshot.empty) return { permitido:false };
+
+  let permitido = false;
+  let docRef = null;
+
+  for(const doc of snapshot.docs){
+    const a = doc.data();
+
+    if(a.status === "pago"){
+      const pacoteDoc = await db.collection("pacotes")
+        .where("nome", "==", a.pacote)
+        .get();
+
+      if(!pacoteDoc.empty){
+        const pacote = pacoteDoc.docs[0].data();
+        const limite = pacote.limite || 0;
+        const usos = a.usos || 0;
+
+        if(usos < limite){
+          permitido = true;
+          docRef = doc.ref;
+        }
+      }
+    }
+  }
+
+  return { permitido, docRef };
+}
+
+function formatarDataLocal(data) {
+  const ano = data.getFullYear();
+  const mes = String(data.getMonth() + 1).padStart(2, '0');
+  const dia = String(data.getDate()).padStart(2, '0');
+  return `${ano}-${mes}-${dia}`;
+}
+
+
+function escutarDadosTempoReal() {
+
+  // 🔥 AGENDA EM TEMPO REAL
+  db.collection("agenda").onSnapshot(snapshot => {
+    agenda = {};
+
+    snapshot.forEach(doc => {
+      agenda[doc.id] = doc.data();
+    });
+
+    atualizarTela();
+  });
+
+  // 🔥 BLOQUEIOS EM TEMPO REAL
+  db.collection("config").doc("bloqueios")
+    .onSnapshot(doc => {
+      bloqueios = doc.exists ? doc.data() : {};
+      atualizarTela();
+    });
+
+  // 🔥 DIAS FECHADOS EM TEMPO REAL
+  db.collection("config").doc("diasFechados")
+    .onSnapshot(doc => {
+      diasFechados = doc.exists ? doc.data().lista : [];
+      atualizarTela();
+    });
+}
+function atualizarTela() {
+  gerarCalendario();
+
+  // 🔥 Se já escolheu data e profissional, atualiza horários automaticamente
+  if(dataSelecionada && profissional){
+    escolherProfissional(profissional);
+  }
+}
+
+// 🔥🔥🔥 AQUI VOCÊ MUDA OS PROFISSIONAIS E HORÁRIOS DISPONÍVEIS 🔥🔥🔥
+const PROFISSIONAIS = [
+  {
+    nome: "Val",
+    horarios: ['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00']
+  },
+  {
+    nome: "Thiago", 
+    horarios: ['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00']
+  },
+  {
+    nome: "Carlos Mendes",
+    horarios: ['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00']
+  }
+  // 🔥 ADICIONE MAIS PROFISSIONAIS AQUI:
+  // {
+  //   nome: "Seu Nome",
+  //   horarios: ['09:00','10:00','11:00','12:00','13:00','14:00']
+  // }
+];
+
+//ALTERACOES DE SERVICOS
+const servicos = {
+  "Corte": 50,
+  "Barba": 30,
+  "Corte + Barba": 80,
+  "Navalha": 110,
+  "Sombrancelha": 15,
+  "Barboterapia": 40
+};
+
+function mostrarTela(telaId) {
+  const telas = ["servicos", "profissionais", "horarios", "resumo"];
+
+  telas.forEach(id => {
+    const el = document.getElementById(id);
+    if(el){
+      el.style.display = (id === telaId) ? "block" : "none";
+      if(id !== telaId) el.innerHTML = el.innerHTML; // limpa bugs visuais
+    }
+  });
+}
+
+function gerarCalendario() {
+  const div = document.getElementById("calendario");
+  div.innerHTML = "";
+  const hoje = new Date();
+  
+  for(let i = 0; i < 7; i++) {
+    const d = new Date();
+    d.setDate(hoje.getDate() + i);
+    const dataISO = formatarDataLocal(d);
+    
+    const estaFechado = Array.isArray(diasFechados) && diasFechados.includes(dataISO);
+    
+    const btn = document.createElement("div");
+    btn.className = `dia ${estaFechado ? 'fechado' : ''}`;
+    btn.innerHTML = `
+      <strong>${d.getDate()}</strong><br>
+      <small>${d.toLocaleDateString("pt-BR",{weekday:"short"})}</small>
+      ${estaFechado ? '<br><small style="color:#e74c3c">FECHADO</small>' : ''}
+    `;
+    
+    if(!estaFechado) {
+      btn.onclick = () => {
+        dataSelecionada = dataISO;
+        document.querySelectorAll(".dia").forEach(el => el.classList.remove("ativo"));
+        btn.classList.add("ativo");
+        document.getElementById("dataEscolhida").innerText = d.toLocaleDateString("pt-BR", {
+          weekday: "long", day: "numeric", month: "long"
+        });
+      };
+    }
+    
+    div.appendChild(btn);
+  }
+}
+
+function resetar() {
+  mostrarTela(null);
+}
+
+function mostrarServicos() {
+  mostrarTela("servicos");
+  const div = document.getElementById("servicos");
+  div.style.display = "block";
+  div.innerHTML = "<h3>✂️ Escolha o Serviço</h3>";
+  
+  Object.entries(servicos).forEach(([n, v]) => {
+    const btn = document.createElement("button");
+    btn.className = "opcao";
+    btn.innerText = `${n} - R$${v}`;
+    btn.onclick = () => escolherServico(n);
+    div.appendChild(btn);
+  });
+}
+
+function escolherServico(nome) {
+  if(!dataSelecionada) return alert("👆 Primeiro escolha um DIA!");
+  nomeServico = nome;
+  document.getElementById("servicos").style.display = "none";
+
+  document.getElementById("horarios").innerHTML = "";
+  // 🔥 PROFISSIONAIS ESTÁTICOS - SEMPRE MOSTRA TODOS
+  const div = document.getElementById("profissionais");
+  div.style.display = "block";
+  div.innerHTML = `<button class="voltar" onclick="mostrarServicos()">⬅ Voltar</button><h3>👨‍💼 Escolha o Profissional</h3>`;
+  
+  PROFISSIONAIS.forEach(prof => {
+    const btn = document.createElement("button");
+    btn.className = "opcao";
+    btn.innerText = prof.nome;
+    btn.onclick = () => escolherProfissional(prof.nome);
+    div.appendChild(btn);
+  });
+}
+
+function escolherProfissional(p) {
+  profissional = p;
+
+  // 🔥 CONTROLE PROFISSIONAL DE TELA
+  mostrarTela("horarios");
+
+  const div = document.getElementById("horarios");
+  div.innerHTML = `
+    <button class="voltar" onclick="escolherServico(nomeServico)">⬅ Voltar</button>
+    <h3>🕒 Horários Disponíveis</h3>
+    <div class="horarios-grid" id="gridHorarios"></div>
+  `;
+  
+  const profSelecionado = PROFISSIONAIS.find(prof => prof.nome === p);
+
+  if (!profSelecionado) {
+    console.error("Profissional não encontrado:", p);
+    return;
+  }
+  const grid = document.getElementById("gridHorarios");
+  grid.innerHTML = "";
+  const todosHorarios = profSelecionado.horarios;
+  const horariosOcupados = agenda[dataSelecionada]?.[p] || [];
+  const bloqueados = (bloqueios?.[dataSelecionada]?.[p]) || []; 
+  
+     
+  todosHorarios.forEach(h => {
+  const listaOcupados = Array.isArray(horariosOcupados) ? horariosOcupados : [];
+  const ocupado = listaOcupados.some(x => (x.horario || x) === h);
+  const bloqueado = bloqueados.includes(h);
+
+  const agora = new Date();
+  const dataHora = new Date(`${dataSelecionada}T${h}`);
+  const passou = dataHora < agora;
+
+  // 🔥 SE NÃO PODE SER SELECIONADO → SIMPLESMENTE IGNORA
+  if (ocupado || bloqueado || passou) {
+    return; // ⬅️ NÃO MOSTRA NO GRID
+  }
+
+  const btn = document.createElement("div");
+  btn.className = "horario-btn";
+  btn.innerHTML = `<span style="color:#25D366">✅ ${h}</span>`;
+  btn.onclick = () => finalizar(h);
+
+  grid.appendChild(btn);
+
+});
+
+if (grid.children.length === 0) {
+  grid.innerHTML = `<p style="opacity:0.7">😕 Nenhum horário disponível</p>`;
+}
+}
+// 🔥 MUDA APENAS ESTAS FUNÇÕES no seu código atual:
+
+function finalizar(h) {
+  horario = h;
+  
+  // 🔥 NÃO OCUPA A AGENDA AQUI - só mostra resumo
+  document.getElementById("horarios").style.display = "none";
+  document.getElementById("resumo").style.display = "block";
+  document.getElementById("resumo").innerHTML = `
+    <button class="voltar" onclick="escolherProfissional(profissional)">⬅ Voltar Horários</button>
+    <h3>✅ Confirme seu agendamento!</h3>
+    <div style="background: rgba(76,175,80,0.2); padding: 20px; border-radius: 15px; margin: 15px 0; border: 2px solid #4CAF50;">
+      <strong>📅 Data:</strong> ${document.getElementById("dataEscolhida").innerText}<br>
+      <strong>✂️ Serviço:</strong> ${nomeServico}<br>
+      <strong>👨‍💼 Profissional:</strong> ${profissional}<br>
+      <strong>🕒 Horário:</strong> ${h}
+    </div>
+    <input class="input-nome" id="nomeCliente" placeholder="👤 Seu nome completo *" required>
+    <button class="whatsapp" onclick="confirmarAgendamento()">
+      📱 Confirmar no WhatsApp
+    </button>
+    <p style="font-size: 12px; opacity: 0.8; margin-top: 10px;">
+      * Clique para confirmar e reservar o horário
+    </p>
+  `;
+}
+
+async function confirmarAgendamento() {
+  const nome = document.getElementById("nomeCliente").value.trim();
+  if(!nome) return alert("👤 Digite seu nome completo!");
+
+  let usarPacote = false;
+  let docRef = null;
+
+  // 🔥 TENTA BUSCAR ASSINATURA (MAS NÃO OBRIGA)
+  const snap = await db.collection("assinaturas")
+    .where("nome", "==", nome)
+    .get();
+
+  if(!snap.empty){
+    const assinatura = snap.docs[0].data();
+
+    // 🔥 SE TEM ASSINATURA PAGA → VERIFICA LIMITE
+    if(assinatura.status === "pago"){
+      const pacoteSnap = await db.collection("pacotes")
+        .where("nome", "==", assinatura.pacote)
+        .get();
+
+      if(!pacoteSnap.empty){
+        const pacote = pacoteSnap.docs[0].data();
+
+        const limite = pacote.limite || 0;
+        const usos = assinatura.usos || 0;
+
+        if(usos < limite){
+          usarPacote = true;
+          docRef = snap.docs[0].ref;
+        } else {
+          alert("⚠️ Seu pacote acabou, mas você pode agendar normalmente.");
+        }
+      }
+    }
+  }
+
+  // 🔥 SALVAR AGENDAMENTO (LIBERADO PRA TODOS)
+  const ref = db.collection("agenda").doc(dataSelecionada);
+  const doc = await ref.get();
+  
+  let dados = doc.exists ? doc.data() : {};
+
+  if(!dados[profissional]) dados[profissional] = [];
+
+  const jaExiste = dados[profissional].some(x => (x.horario || x) === horario);
+
+  if(jaExiste){
+    return alert("❌ Esse horário acabou de ser ocupado!");
+  }
+
+  dados[profissional].push({
+    horario: horario,
+    nome: nome,
+    servicos: nomeServico
+  });
+
+  await ref.set(dados);
+
+  // 🔥 SÓ DESCONTA SE USOU PACOTE
+  if(usarPacote && docRef){
+    await docRef.update({
+      usos: firebase.firestore.FieldValue.increment(1)
+    });
+  }
+
+  // 🔥 WHATSAPP
+  const dataFormatada = document.getElementById("dataEscolhida").innerText;
+
+  const msg = `✂️ *BARBEARIA COSMO*\n\n` +
+              `👤 *Cliente:* ${nome}\n` +
+              `📅 *Data:* ${dataFormatada}\n` +
+              `✂️ *Serviço:* ${nomeServico}\n` +
+              `👨‍💼 *Profissional:* ${profissional}\n` +
+              `🕒 *Horário:* ${horario}\n\n` +
+              `✅ *AGENDAMENTO CONFIRMADO!*`;
+
+  window.open(`https://wa.me/SEUNUMEROAQUI?text=${encodeURIComponent(msg)}`, '_blank');
+
+  alert("✅ Horário reservado com sucesso!");
+}
+
+function enviarWhats() {
+  const nome = document.getElementById("nomeCliente").value.trim();
+  if(!nome) return alert("👤 Digite seu nome completo!");
+  
+  const dataFormatada = document.getElementById("dataEscolhida").innerText;
+  const msg = `✂️ *BARBEARIA COSMO*\n\n` +
+              `👤 *Cliente:* ${nome}\n` +
+              `📅 *Data:* ${dataFormatada}\n` +
+              `✂️ *Serviço:* ${nomeServico}\n` +
+              `👨‍💼 *Profissional:* ${profissional}\n` +
+              `🕒 *Horário:* ${horario}\n\n` +
+              `✅ *AGENDAMENTO CONFIRMADO!*\n` +
+              `📲 Entraremos em contato para confirmação final.`;
+  
+  // 🔥 MUDA AQUI PELO SEU NÚMERO REAL
+  window.open(`https://wa.me/5511999999999?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', function() {
+  mostrarServicos();
+  escutarDadosTempoReal()
+//  escutarPacotesTempoReal();; // 🔥 AGORA VEM DO FIREBASE
+});
+</script>
+
+</body>
+</html>

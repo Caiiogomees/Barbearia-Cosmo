@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Barbearia Cosmo</title>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBBq2T_Izpp1Es1Ch-o7hTRcDzEZ0P17Ng",
+    authDomain: "barbearia-cosmo.firebaseapp.com",
+    projectId: "barbearia-cosmo",
+    storageBucket: "barbearia-cosmo.firebasestorage.app",
+    messagingSenderId: "883807366405",
+    appId: "1:883807366405:web:b6e85a00c951a0e5745b6c"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --gold:#d46337;
+  --dark:#0D0D0D;
+  --card:#161616;
+  --accent:#A67360;
+}
+.primary{
+  background: linear-gradient(45deg, #A67360, #59251B);
+  color:#fff;
+}
+.card{
+  background: rgba(13,13,13,0.85);
+  border: 1px solid rgba(166,115,96,0.3);
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:'Poppins',sans-serif;
+
+  background: 
+    linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.85)),
+    url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=800');
+
+
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: #0f0f0f;
+
+  color:#fafafa;
+  min-height:100vh;
+}
+
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:20px;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.header h1{
+  color:var(--gold);
+}
+
+/* 🔥 HEADER MODERNO */
+.topbar{
+  position:sticky;
+  top:0;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(15px);
+  border-bottom:1px solid rgba(212,175,55,0.2);
+  padding:15px 0;
+  z-index:999;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:20px;
+}
+
+/* 🔥 CARD PREMIUM */
+.card{
+  background: rgba(20,20,20,0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(212,175,55,0.2);
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+  transition: 0.3s;
+  position: relative;
+  overflow: hidden;
+  animation: fadeUp 0.5s ease;
+}
+
+.card::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: linear-gradient(120deg, transparent, rgba(212,175,55,0.15), transparent);
+  opacity:0;
+  transition:0.4s;
+}
+
+.card:hover::before{
+  opacity:1;
+}
+
+.card:hover{
+  transform: translateY(-6px) scale(1.01);
+  border-color: rgba(212,175,55,0.5);
+}
+
+/* 🔥 BOTÕES */
+button{
+  padding:10px 15px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:500;
+  margin:2px;
+  transition: all 0.25s ease;
+}
+
+button:hover{
+  transform: translateY(-2px);
+  opacity: 0.95;
+}
+
+.primary{
+  background: linear-gradient(45deg, #d4af37, #f1c40f);
+  color:#000;
+  font-weight:600;
+}
+
+.primary:hover{
+  box-shadow:0 5px 20px rgba(212,175,55,0.4);
+}
+
+.danger{ background:#e74c3c; color:#fff; }
+.success{ background:var(--accent); color:#fff; }
+.warning{ background:#f39c12; color:#fff; }
+
+input, select{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:8px;
+  border:none;
+  background:#222;
+  color:#fff;
+}
+
+.modal{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.85);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:1000;
+}
+
+.modal-content{
+  width:95%;
+  max-width:700px;
+  max-height:90vh;
+  overflow-y:auto;
+  background:var(--card);
+  padding:25px;
+  border-radius:16px;
+  border:1px solid var(--gold);
+}
+
+/* 🔥 BADGE MODERNA */
+.badge{
+  position: relative;
+  z-index: 1;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:8px 12px;
+  border-radius:999px;
+  background:linear-gradient(45deg, #e74c3c, #c0392b);
+  color:#fff;
+  margin:4px;
+  font-size:0.85em;
+  box-shadow:0 4px 10px rgba(0,0,0,0.4);
+}
+.badge button{
+  position: relative;
+  z-index: 2;
+}
+
+.section-title{
+  color:var(--gold);
+  margin-top:20px;
+  border-bottom:2px solid var(--gold);
+  padding-bottom:10px;
+}
+
+@keyframes fadeUp{
+  from{
+    opacity:0;
+    transform: translateY(15px);
+  }
+  to{
+    opacity:1;
+    transform: translateY(0);
+  }
+}
+
+.card-assinatura {
+  background: linear-gradient(145deg, #0f0f0f, #1c1c1c);
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.4);
+  transition: 0.3s;
+}
+
+.card-assinatura:hover {
+  transform: scale(1.02);
+  border-color: #c59d5f;
+}
+
+.topo-assinatura {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.topo-assinatura h3 {
+  color: #fff;
+  font-size: 15px;
+  margin:0;
+}
+
+.status {
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.status.pago {
+  background: #1f8f4e;
+  color: #fff;
+}
+
+.status.pendente {
+  background: #b58b00;
+  color: #fff;
+}
+
+.status.bloqueado {
+  background: #8f1f1f;
+  color: #fff;
+}
+
+.info-assinatura {
+  margin-top: 6px;
+  color: #ccc;
+  font-size: 12px;
+}
+
+.acoes-assinatura {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.acoes-assinatura button {
+  flex: 1;
+  border: none;
+  border-radius: 6px;
+  padding: 6px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-ativar {
+  background: #2ecc71;
+  color: #000;
+}
+
+.btn-bloquear {
+  background: #e74c3c;
+  color: #fff;
+}
+
+.btn-reset {
+  background: #555;
+  color: #fff;
+}
+
+.acoes-assinatura button:hover {
+  opacity: 0.8;
+}
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+@media (max-width: 768px){
+  .dashboard{
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 768px){
+  .header{
+    flex-direction: column;
+    align-items: flex-start;
+    gap:10px;
+  }
+
+  .header img{
+    width:70px !important;
+  }
+
+  .topbar .container{
+    padding:10px;
+  }
+}
+/* 🔥 OTIMIZAÇÕES CELULAR */
+@media (max-width: 480px) {
+  body {
+    padding: 10px;
+    background-attachment: scroll; /* Evita lag no scroll */
+  }
+  
+  .container {
+    max-width: 100%;
+    padding: 15px 10px;
+    margin: 0;
+  }
+  
+  h1 {
+    font-size: 24px;
+    margin: 10px 0;
+  }
+  
+  .card {
+    padding: 20px 15px;
+    margin: 10px 0;
+  }
+  
+  button {
+    padding: 18px 16px;
+    font-size: 18px; /* Touch-friendly */
+    margin: 6px 0;
+    min-height: 56px; /* Altura mínima Apple */
+  }
+  
+  .calendario {
+    padding: 10px 0;
+    gap: 8px;
+  }
+  
+  .dia {
+    min-width: 65px;
+    padding: 10px 8px;
+    font-size: 14px;
+  }
+  
+  .horarios-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+  }
+  
+  .horario-btn {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+  
+  .input-nome {
+    padding: 16px;
+    font-size: 18px;
+    margin: 12px 0;
+  }
+  
+  /* Esconde logo de fundo em celular pequeno */
+  body::after {
+    width: 250px;
+    height: 250px;
+    opacity: 0.05;
+  }
+}
+
+/* Safe area para notch/iPhone */
+@supports(padding: max(0px)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+.card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.lista-agenda {
+  margin-top: 10px;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+.item-agenda {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(166,115,96,0.3);
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.item-agenda strong {
+  color: #d4af37;
+}
+
+.item-agenda small {
+  opacity: 0.7;
+}
+</style>
+</head>
+
+<body>
+  
+<div class="topbar">
+  <div class="container header">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <img src="logo-bg.png" style="width:100px; margin-bottom:10px;">
+      
+
+
+      <h1 style="margin:0;">✂️Admin Cosmo</h1>
+    </div>
+    <div>
+      <button class="primary" onclick="abrirAdmin()">🔐 Painel Admin</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="dashboard">
+
+    <div class="card">
+      <h3>📊 Estatísticas</h3>
+      <div id="stats">Carregando...</div>
+    </div>
+
+    <div class="card">
+      <h3>📅 Agenda Completa</h3>
+      <div id="agendaCompleta">Carregando...</div>
+    </div>
+
+    <div class="card">
+      <h3>🕒 Agenda de Hoje</h3>
+      <div id="agendaHoje">Carregando...</div>
+    </div>
+
+</div>
+  <div class="card"style="display:none">
+    <h3>📦 Pacotes Disponíveis</h3>
+    <div id="listaPacotesPublico"></div>
+  </div>
+</div>
+
+<!-- Modal Admin -->
+<div class="modal" id="adminModal">
+  <div class="modal-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2>🔐 Painel Admin</h2>
+      <button class="danger" onclick="fecharAdmin()">✕</button>
+    </div>
+
+    <!-- Login -->
+    <div id="loginAdmin">
+      <input id="senhaAdmin" type="password" placeholder="Senha Admin">
+      <button class="primary" onclick="loginAdmin()">Entrar</button>
+    </div>
+
+    <!-- Painel Admin -->
+    <div id="painelAdmin" style="display:none;">
+      
+      <div class="section-title">⛔ Bloquear Turno</div>
+
+      <input id="bloqProf" placeholder="Profissional">
+      <input id="bloqHorario" placeholder="Horário (ex: 09:00)">
+      <input id="bloqData" type="date">
+
+      <button class="warning" onclick="bloquearHorario()">Bloquear</button>
+      <button class="success" onclick="desbloquearHorario()">Desbloquear</button>
+      
+    <div style="display:none;">
+
+      <div class="section-title">📦 Gerenciar Pacotes</div>
+      <div id="listaPacotesAdmin"></div>
+
+      <input id="pacoteNome" placeholder="Nome do pacote">
+      <input id="pacoteDescricao" placeholder="Descrição">
+      <input id="pacotePreco" type="number" placeholder="Preço">
+
+      <button class="success" onclick="criarPacote()">Criar Pacote</button>
+    </div>
+
+    <div style="display:none"> 
+      <div class="section-title">📦 Assinaturas</div>
+      <div id="listaAssinaturas"></div>
+    </div>
+      <!-- Adicionar Horário -->
+      <div class="section-title">➕ Adicionar Horário</div>
+      <input id="novoProf" placeholder="Nome do Profissional">
+      <input id="novoHorario" placeholder="Horário (ex: 17:00)">
+      <input id="dataAdicionar" type="date" style="margin-bottom:10px;">
+      <button class="success" onclick="adicionarHorario()">Adicionar Horário</button>
+
+      <!-- Remover Horário -->
+      <div class="section-title">➖ Remover Horário</div>
+      <input id="removerProf" placeholder="Nome do Profissional">
+      <input id="removerHorario" placeholder="Horário (ex: 17:00)">
+      <input id="dataRemover" type="date" style="margin-bottom:10px;">
+      <button class="danger" onclick="removerHorario()">Remover Horário</button>
+
+      <!-- Gerenciar Dias -->
+      <div class="section-title">📅 Gerenciar Dias</div>
+      <input id="diaFechado" type="date">
+      <button class="warning" onclick="fecharDia()">🔒 Fechar Dia</button>
+      <button class="success" onclick="abrirDia()">🔓 Abrir Dia</button>
+
+      <div id="statusDias" style="margin-top:15px;"></div>
+
+      <div style="margin-top:30px; padding-top:20px; border-top:1px solid #444;">
+        <button class="danger" onclick="logoutAdmin()">Sair do Admin</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let agenda = {};
+let diasFechados = [];
+let bloqueios = {};
+
+const PRECOS = {
+  "Corte": 50,
+  "Barba": 30,
+  "Corte + Barba": 80,
+  "Navalha": 110,
+  "Sombrancelha": 15,
+  "Barboterapia": 40
+};
+function formatarDataLocal(dataISO) {
+  if (!dataISO) return "";
+
+  const data = new Date(dataISO + "T00:00:00");
+  
+  return data.toLocaleDateString("pt-BR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+}
+function seguro(valor, padrao = []) {
+  return Array.isArray(valor) ? valor : padrao;
+}
+
+function escutarAgendaTempoReal() {
+  db.collection("agenda").onSnapshot(snapshot => {
+    agenda = {};
+
+   snapshot.forEach(doc => {
+    const dados = doc.data();
+
+    if (!dados || typeof dados !== "object") return;
+
+    agenda[doc.id] = dados;
+});
+
+    mostrarStats();
+    mostrarAgendaCompleta();
+    mostrarAgendaHoje();
+  });
+}
+async function carregarDadosAdmin() {
+  try {
+
+    // agenda
+    const snapshot = await db.collection("agenda").get();
+    agenda = {};
+    snapshot.forEach(doc => {
+      agenda[doc.id] = doc.data();
+    });
+
+    // dias fechados
+    const diasDoc = await db.collection("config").doc("diasFechados").get();
+    diasFechados = (diasDoc.exists && diasDoc.data().lista)
+      ? diasDoc.data().lista
+      : [];
+
+    // 🔥 BLOQUEIOS
+    const bloqueioDoc = await db.collection("config").doc("bloqueios").get();
+    bloqueios = bloqueioDoc.exists ? bloqueioDoc.data() : {};
+
+    mostrarStats();
+    mostrarAgendaCompleta();
+    mostrarStatusDias();
+    mostrarAgendaHoje();
+    
+
+  } catch (erro) {
+    console.error("Erro admin:", erro);
+    alert("Erro ao carregar 😢");
+  }
+}
+
+//INICIALIZAÇAO
+document.addEventListener('DOMContentLoaded', function() {
+  escutarAgendaTempoReal();
+  escutarConfigTempoReal();
+  escutarPacotesPublico(); // o
+});
+
+function escutarConfigTempoReal() {
+  db.collection("config").doc("diasFechados")
+    .onSnapshot(doc => {
+      diasFechados = doc.exists ? doc.data().lista : [];
+      mostrarStats();
+      mostrarAgendaCompleta();
+      mostrarStatusDias();
+      
+    });
+}
+
+function escutarAssinaturas(){
+  db.collection("assinaturas").onSnapshot(snapshot => {
+    const div = document.getElementById("listaAssinaturas");
+
+    if(!div) return;
+
+    div.innerHTML = "<h4>Clientes que solicitaram pacote:</h4>";
+
+    snapshot.forEach(doc => {
+      const a = doc.data();
+
+      div.innerHTML += `
+        <div style="background:#222; padding:12px; border-radius:10px; margin:10px 0;">
+          <strong>👤 ${a.nome}</strong><br>
+          📦 ${a.pacote}<br>
+          💰 R$ ${a.preco}<br>
+          📌 Status: <span style="color:${a.status === 'pago' ? '#25D366' : '#f39c12'}">
+            ${a.status}
+          </span><br><br>
+
+          ${
+            a.status !== "pago"
+            ? `<button class="success" onclick="confirmarPagamento('${doc.id}')">
+                Confirmar pagamento
+               </button>`
+            : `<span style="color:#25D366;">✔ Pago</span>`
+          }
+        </div>
+      `;
+    });
+  });
+}
+async function confirmarPagamento(id){
+  await db.collection("assinaturas").doc(id).update({
+    status: "pago"
+  });
+
+  alert("✅ Pagamento confirmado!");
+}
+function escutarPacotesPublico() {
+  db.collection("pacotes").onSnapshot(snapshot => {
+    const div = document.getElementById("listaPacotesPublico");
+
+    if(!div) return;
+
+    div.innerHTML = "";
+
+    snapshot.forEach(doc => {
+      const p = doc.data();
+
+      div.innerHTML += `
+        <div style="background:#222; padding:15px; border-radius:12px; margin:10px 0;">
+          <strong style="font-size:18px;">${p.nome}</strong><br>
+          <small>${p.descricao}</small><br>
+          <strong style="color:#25D366;">R$ ${p.preco}</strong>
+        </div>
+      `;
+    });
+  });
+}
+function escutarPacotesAdmin() {
+  db.collection("pacotes").onSnapshot(snapshot => {
+    const div = document.getElementById("listaPacotesAdmin");
+
+    if(!div) return;
+
+    div.innerHTML = "<h4>Pacotes cadastrados:</h4>";
+
+    snapshot.forEach(doc => {
+      const p = doc.data();
+
+      div.innerHTML += `
+        <div style="background:#222; padding:10px; border-radius:8px; margin:8px 0;">
+          <strong>${p.nome}</strong><br>
+          <small>${p.descricao}</small><br>
+          <strong>R$ ${p.preco}</strong><br><br>
+
+          <button class="danger" onclick="excluirPacote('${doc.id}')">
+            Excluir
+          </button>
+        </div>
+      `;
+    });
+  });
+}
+async function carregarAssinaturas(){
+  const div = document.getElementById("listaAssinaturas");
+  div.innerHTML = "Carregando...";
+
+  const snap = await db.collection("assinaturas").get();
+
+  if(snap.empty){
+    div.innerHTML = "Nenhuma assinatura";
+    return;
+  }
+
+  let html = "";
+
+  snap.forEach(doc => {
+    const a = doc.data();
+
+    html += `
+     <div class="card-assinatura">
+    
+      <div class="topo-assinatura">
+        <h3>${a.nome}</h3>
+        <span class="status ${a.status}">${a.status}</span>
+      </div>
+
+      <div class="info-assinatura">
+        <p>📦 ${a.pacote}</p>
+        <p>📊 Usos: <strong>${a.usos || 0}</strong></p>
+      </div>
+
+      <div class="acoes-assinatura">
+        <button onclick="ativarAssinatura('${doc.id}')" class="btn-ativar">Ativar</button>
+        <button onclick="bloquearAssinatura('${doc.id}')" class="btn-bloquear">Bloquear</button>
+        <button onclick="resetarUso('${doc.id}')" class="btn-reset">Resetar</button>
+      </div>
+
+  </div>
+`;
+  });
+
+  div.innerHTML = html;
+}
+async function ativarAssinatura(id){
+  await db.collection("assinaturas").doc(id).update({
+    status: "pago",
+    usos: 0
+  });
+  carregarAssinaturas();
+}
+
+async function bloquearAssinatura(id){
+  await db.collection("assinaturas").doc(id).update({
+    status: "pendente"
+  });
+  carregarAssinaturas();
+}
+
+async function resetarUso(id){
+  await db.collection("assinaturas").doc(id).update({
+    usos: 0
+  });
+  carregarAssinaturas();
+}
+async function salvarAgendaFirebase() {
+  for (let data in agenda) {
+    await db.collection("agenda").doc(data).set(agenda[data]);
+  }
+}
+
+async function salvarDiasFirebase() {
+  await db.collection("config").doc("diasFechados").set({
+    lista: diasFechados
+  });
+}
+
+async function bloquearHorario() {
+  const prof = document.getElementById("bloqProf").value;
+  const horario = document.getElementById("bloqHorario").value;
+  const data = document.getElementById("bloqData").value;
+
+  if(!prof || !horario || !data){
+    return alert("❌ Preencha tudo!");
+  }
+
+  const ref = db.collection("config").doc("bloqueios");
+  const doc = await ref.get();
+
+  let dados = doc.exists ? doc.data() : {};
+
+  if(!dados[data]) dados[data] = {};
+  if(!dados[data][prof]) dados[data][prof] = [];
+
+  // evita duplicado
+  if(!dados[data][prof].includes(horario)){
+    dados[data][prof].push(horario);
+  }
+
+  await ref.set(dados);
+
+  await carregarDadosAdmin(); // 🔥 ESSENCIAL
+
+  alert("🚫 Horário bloqueado!");
+}
+
+async function desbloquearHorario() {
+  const prof = document.getElementById("bloqProf").value;
+  const horario = document.getElementById("bloqHorario").value;
+  const data = document.getElementById("bloqData").value;
+
+  const ref = db.collection("config").doc("bloqueios");
+  const doc = await ref.get();
+
+  if(!doc.exists) return;
+
+  let dados = doc.data();
+
+  if(dados[data] && dados[data][prof]){
+    dados[data][prof] = dados[data][prof].filter(h => h !== horario);
+
+    // limpa vazio
+    if(dados[data][prof].length === 0){
+      delete dados[data][prof];
+    }
+
+    if(Object.keys(dados[data]).length === 0){
+      delete dados[data];
+    }
+  }
+
+  await ref.set(dados);
+
+  await carregarDadosAdmin(); // 🔥 ESSENCIAL
+
+  alert("✅ Horário liberado!");
+}
+
+
+async function desbloquearHorarioDireto(data, prof, horario){
+  const ref = db.collection("config").doc("bloqueios");
+  const doc = await ref.get();
+
+  if(!doc.exists) return;
+
+  let dados = doc.data();
+
+  dados[data][prof] = dados[data][prof].filter(h => h !== horario);
+
+  if(dados[data][prof].length === 0) delete dados[data][prof];
+  if(Object.keys(dados[data]).length === 0) delete dados[data];
+
+  await ref.set(dados);
+
+  await carregarDadosAdmin();
+}
+
+
+function abrirAdmin() {
+  document.getElementById("adminModal").style.display = "flex";
+  document.getElementById("senhaAdmin").value = "";
+  document.getElementById("senhaAdmin").focus();
+}
+
+function fecharAdmin() {
+  document.getElementById("adminModal").style.display = "none";
+}
+//ALTERAR SENHA POR AQUI! ANTES DE ENTREGAR AO CLIENTE
+function loginAdmin() {
+  console.log("Carregando admin...");
+  const senha = document.getElementById("senhaAdmin").value;
+  if(senha === "cosmo2026") {
+    document.getElementById("loginAdmin").style.display = "none";
+    document.getElementById("painelAdmin").style.display = "block";
+    carregarDadosAdmin();
+    escutarAssinaturas();
+    carregarAssinaturas();
+  } else {
+    alert("❌ Senha incorreta!");
+    document.getElementById("senhaAdmin").value = "";
+    document.getElementById("senhaAdmin").focus();
+  }
+  
+}
+
+function logoutAdmin() {
+  document.getElementById("loginAdmin").style.display = "block";
+  document.getElementById("painelAdmin").style.display = "none";
+}
+
+function carregarAdmin() {
+  mostrarStats();
+  mostrarAgendaCompleta();
+  mostrarStatusDias();
+}
+
+function mostrarStats() {
+  let total = 0;
+  let porProf = {};
+
+  let faturamentoTotal = 0;
+  let faturamentoHoje = 0;
+  let faturamentoMes = 0;
+
+  let faturamentoPrevisto = 0;
+  let faturamentoRealizado = 0;
+
+  let faturamentoPorProf = {};
+
+  let hoje = getDataHojeLocal();
+  let hojeTotal = 0;
+
+  let proximosHoje = [];
+
+  const agora = new Date();
+
+  Object.entries(agenda).forEach(([data, profs]) => {
+    if (!diasFechados.includes(data)) {
+
+      Object.entries(profs).forEach(([prof, horarios]) => {
+
+        (horarios || []).forEach(h => {
+
+          const horario = typeof h === "string" ? h : h.horario;
+          const dataHora = new Date(`${data}T${horario}`);
+          const passou = dataHora < agora;
+
+          const nome = typeof h === "string" ? "Cliente" : h.nome;
+
+          const servico = h.servicos || h.servico || "Corte";
+          if (!PRECOS[servico]) return;
+
+          const valor = PRECOS[servico];
+
+          const dataObj = new Date(data);
+          const hojeObj = new Date();
+
+          const mesmoMes =
+            dataObj.getMonth() === hojeObj.getMonth() &&
+            dataObj.getFullYear() === hojeObj.getFullYear();
+
+          // 🔥 TOTAL (histórico completo)
+          total++;
+          faturamentoTotal += valor;
+
+          // 💰 por profissional
+          porProf[prof] = (porProf[prof] || 0) + 1;
+          faturamentoPorProf[prof] = (faturamentoPorProf[prof] || 0) + valor;
+
+          // 🟢 FUTURO (previsto)
+          if (!passou) {
+            faturamentoPrevisto += valor;
+
+            if (data === hoje) {
+              faturamentoHoje += valor;
+              hojeTotal++;
+
+              proximosHoje.push({
+                horario,
+                nome,
+                prof
+              });
+            }
+
+            if (mesmoMes) {
+              faturamentoMes += valor;
+            }
+          }
+
+          // 🔴 PASSADO (realizado)
+          if (passou) {
+            faturamentoRealizado += valor;
+          }
+
+        });
+
+      });
+
+    }
+  });
+
+  let topProf = Object.keys(porProf).sort((a, b) => porProf[b] - porProf[a])[0] || "-";
+
+  proximosHoje.sort((a, b) => a.horario.localeCompare(b.horario));
+
+  let html = `
+
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;">
+
+    <div style="background:#111; padding:15px; border-radius:12px; text-align:center;">
+      <h2 style="margin:0; color:#d4af37;">${total}</h2>
+      <small>Total Agendamentos</small>
+    </div>
+
+    <div style="background:#111; padding:15px; border-radius:12px; text-align:center;">
+      <h2 id="faturamentoValor" style="margin:0; color:#25D366; cursor:pointer;">
+        R$ ${faturamentoHoje}
+      </h2>
+      <small id="faturamentoLabel">Faturamento Hoje</small>
+
+      <div style="margin-top:8px; font-size:12px; color:#aaa;">
+        🟢 Previsto: R$ ${faturamentoPrevisto} <br>
+        🔴 Realizado: R$ ${faturamentoRealizado}
+      </div>
+    </div>
+
+    <div style="background:#111; padding:15px; border-radius:12px; text-align:center;">
+      <h2 style="margin:0; color:#3498db;">${hojeTotal}</h2>
+      <small>Hoje (pendentes)</small>
+    </div>
+
+    <div style="background:#111; padding:15px; border-radius:12px; text-align:center;">
+      <h2 style="margin:0; color:#e74c3c;">${diasFechados.length}</h2>
+      <small>Dias Fechados</small>
+    </div>
+
+    <div style="background:#111; padding:15px; border-radius:12px; text-align:center;">
+      <h2 style="margin:0; color:#f1c40f;">${topProf}</h2>
+      <small>Top Profissional</small>
+    </div>
+
+  </div>
+
+  <div style="margin-top:20px;">
+    <h3 style="color:#d4af37;">📊 Por Profissional</h3>
+  `;
+
+  Object.keys(porProf).forEach(prof => {
+    html += `
+      <div style="margin:8px 0; padding:10px; background:#222; border-radius:8px;">
+        <strong>${prof}</strong><br>
+        ✂️ ${porProf[prof]} atendimentos<br>
+        💰 R$ ${faturamentoPorProf[prof] || 0}
+      </div>
+    `;
+  });
+
+
+  html += `</div>`;
+
+  document.getElementById("stats").innerHTML = html;
+
+  // 🔥 TOGGLE INTELIGENTE
+  let modo = "hoje";
+
+  document.getElementById("faturamentoValor").onclick = () => {
+    if (modo === "hoje") {
+      modo = "mes";
+      faturamentoValor.innerText = "R$ " + faturamentoMes;
+      faturamentoLabel.innerText = "Faturamento Mês (previsto)";
+    } 
+    else if (modo === "mes") {
+      modo = "total";
+      faturamentoValor.innerText = "R$ " + faturamentoTotal;
+      faturamentoLabel.innerText = "Faturamento Total";
+    } 
+    else {
+      modo = "hoje";
+      faturamentoValor.innerText = "R$ " + faturamentoHoje;
+      faturamentoLabel.innerText = "Faturamento Hoje";
+    }
+  };
+}
+
+function mostrarAgendaHoje() {
+  const hoje = getDataHojeLocal();
+  const agora = new Date();
+
+  let lista = [];
+
+  if (agenda[hoje]) {
+    Object.entries(agenda[hoje]).forEach(([prof, horarios]) => {
+      (horarios || []).forEach(h => {
+
+        const horario = typeof h === "string" ? h : h.horario;
+        const nome = typeof h === "string" ? "Cliente" : h.nome;
+        const servico = h.servicos || h.servico || "Corte";
+
+        const dataHora = new Date(`${hoje}T${horario}`);
+
+        // só futuros
+        if (dataHora >= agora) {
+          lista.push({
+            horario,
+            nome,
+            servico
+          });
+        }
+      });
+    });
+  }
+
+  lista.sort((a, b) => a.horario.localeCompare(b.horario));
+
+  let html = "";
+
+  if (lista.length === 0) {
+    html = "<p>Sem atendimentos hoje</p>";
+  } else {
+    lista.forEach(item => {
+      html += `
+        <div class="item-agenda">
+          <strong>${item.horario}</strong><br>
+          👤 ${item.nome}<br>
+          🛠️ ${item.servico}
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById("agendaHoje").innerHTML = html;
+}
+
+function mostrarAgendaCompleta() {
+  let html = "";
+
+  if(Object.keys(agenda).length === 0) {
+    document.getElementById("agendaCompleta").innerHTML = "<p>📭 Sem agendamentos</p>";
+    return;
+  }
+
+  let agendaPorProfissional = {};
+
+  // Organiza por profissional
+ Object.entries(agenda || {}).forEach(([data, profs]) => {
+
+  if (!profs || typeof profs !== "object") return;
+
+  Object.entries(profs).forEach(([prof, horarios]) => {
+
+    if (!Array.isArray(horarios)) return;
+
+    if (!agendaPorProfissional[prof]) {
+      agendaPorProfissional[prof] = {};
+    }
+
+    agendaPorProfissional[prof][data] = horarios;
+
+  });
+
+});
+
+  // Renderiza
+  Object.entries(agendaPorProfissional).forEach(([prof, datas]) => {
+
+    html += `
+      <div style="margin-bottom:25px; padding:15px; border:1px solid gold; border-radius:12px;">
+        <h3 style="color:gold;">👨‍💼 ${prof}</h3>
+    `;
+
+    Object.entries(datas)
+      .sort(([a], [b]) => new Date(a) - new Date(b))
+      .forEach(([data, horarios]) => {
+
+        const dataFormatada = new Date(data + "T00:00:00").toLocaleDateString("pt-BR", {
+          day: "numeric",
+          month: "long",
+          weekday: "short"
+      });
+
+        html += `<div style="margin:10px 0;">`;
+        html += `<strong>📅 ${dataFormatada}</strong><br>`;
+
+        (horarios || []).forEach(h => {
+
+          if (!h) return;
+          const horario = typeof h === "string" ? h : h.horario;
+          const nome = typeof h === "string" ? "Cliente" : h.nome;
+
+          html += `
+            <span class="badge" style="background:#e74c3c;">
+              ${horario} - ${nome}
+              <button class="danger" onclick="liberar('${data}','${prof}','${horario}')" 
+              style="margin-left:5px; padding:2px 6px;">✕</button>
+            </span>
+          `;
+        });
+
+        html += `</div>`;
+      });
+
+    html += `</div>`;
+  });
+
+  document.getElementById("agendaCompleta").innerHTML = html;
+}
+
+async function liberar(data, prof, horario) {
+  if (!confirm(`Liberar horário ${horario} do ${prof}?`)) return;
+
+  const ref = db.collection("agenda").doc(data);
+  const doc = await ref.get();
+
+  if (!doc.exists) return;
+
+  let dados = doc.data();
+
+  if (!dados[prof]) return;
+
+  // 🔥 REMOVE CERTO (OBJETO OU STRING)
+  dados[prof] = dados[prof].filter(item => {
+    const h = typeof item === "string" ? item : item.horario;
+    return h !== horario;
+  });
+
+  // limpa estrutura
+  if (dados[prof].length === 0) delete dados[prof];
+
+  if (Object.keys(dados).length === 0) {
+    await ref.delete();
+    delete agenda[data]; // 🔥 remove do estado local
+  } else {
+    await ref.set(dados);
+    agenda[data] = dados; // 🔥 atualiza local
+  }
+
+  // 🔥 atualiza interface SEM precisar dar F5
+  carregarAdmin();
+
+  alert("✅ Horário liberado!");
+}
+
+function adicionarHorario() {
+  const prof = document.getElementById("novoProf").value.trim();
+  const horario = document.getElementById("novoHorario").value.trim();
+  const data = document.getElementById("dataAdicionar").value;
+
+  if(!prof || !horario || !data) {
+    return alert("❌ Preencha todos os campos!");
+  }
+
+  if(diasFechados.includes(data)) {
+    return alert("❌ Este dia está fechado!");
+  }
+
+  if(!agenda[data]) agenda[data] = {};
+  if(!agenda[data][prof]) agenda[data][prof] = [];
+
+  // Verificar se horário já existe
+  if(agenda[data][prof].includes(horario)) {
+    return alert("❌ Este horário já está ocupado!");
+  }
+
+  agenda[data][prof].push(horario);
+  salvarAgendaFirebase();
+  salvarDiasFirebase();
+  
+  // Limpar campos
+  document.getElementById("novoProf").value = "";
+  document.getElementById("novoHorario").value = "";
+  document.getElementById("dataAdicionar").value = "";
+  
+  carregarDadosAdmin();
+  alert(`✅ Horário ${horario} adicionado para ${prof} em ${new Date(data + "T00:00:00").toLocaleDateString('pt-BR')}!`);
+}
+
+function removerHorario() {
+  const prof = document.getElementById("removerProf").value.trim();
+  const horario = document.getElementById("removerHorario").value.trim();
+  const data = document.getElementById("dataRemover").value;
+
+  if(!prof || !horario || !data) {
+    return alert("❌ Preencha todos os campos!");
+  }
+
+  if(diasFechados.includes(data)) {
+    return alert("❌ Este dia está fechado!");
+  }
+
+  if(!agenda[data] || !agenda[data][prof]) {
+    return alert("❌ Este horário não existe para este profissional nesta data!");
+  }
+
+  // Verificar se horário existe
+  const index = agenda[data][prof].indexOf(horario);
+  if(index === -1) {
+    return alert("❌ Este horário não está agendado para este profissional!");
+  }
+
+  // Remover horário
+  agenda[data][prof].splice(index, 1);
+  
+  if(agenda[data][prof].length === 0) delete agenda[data][prof];
+  if(Object.keys(agenda[data]).length === 0) delete agenda[data];
+  
+  salvarAgendaFirebase();
+  salvarDiasFirebase();
+  
+  // Limpar campos
+  document.getElementById("removerProf").value = "";
+  document.getElementById("removerHorario").value = "";
+  document.getElementById("dataRemover").value = "";
+  
+  carregarDadosAdmin();
+  alert(`✅ Horário ${horario} removido de ${prof} em ${new Date(data + "T00:00:00").toLocaleDateString('pt-BR')}!`);
+}
+
+function fecharDia() {
+  const dia = document.getElementById("diaFechado").value;
+  if(!dia) return alert("❌ Selecione uma data!");
+
+  if(!diasFechados.includes(dia)) {
+    diasFechados.push(dia);
+    salvarAgendaFirebase();
+    salvarDiasFirebase();
+    carregarDadosAdmin();
+    alert("🔒 Dia fechado com sucesso!");
+  } else {
+    alert("ℹ️ Este dia já está fechado!");
+  }
+}
+
+function abrirDia() {
+  const dia = document.getElementById("diaFechado").value;
+  if(!dia) return alert("❌ Selecione uma data!");
+
+  const index = diasFechados.indexOf(dia);
+  if(index > -1) {
+    diasFechados.splice(index, 1);
+    salvarAgendaFirebase();
+    salvarDiasFirebase();
+    carregarDadosAdmin();
+    alert("🔓 Dia reaberto com sucesso!");
+  } else {
+    alert("ℹ️ Este dia não está fechado!");
+  }
+}
+
+async function criarPacote() {
+  const nome = document.getElementById("pacoteNome").value.trim();
+  const descricao = document.getElementById("pacoteDescricao").value.trim();
+  const preco = Number(document.getElementById("pacotePreco").value);
+
+  if(!nome || !descricao || !preco){
+    return alert("❌ Preencha todos os campos!");
+  }
+
+  await db.collection("pacotes").add({
+    nome,
+    descricao,
+    preco
+  });
+
+  document.getElementById("pacoteNome").value = "";
+  document.getElementById("pacoteDescricao").value = "";
+  document.getElementById("pacotePreco").value = "";
+
+  alert("✅ Pacote criado!");
+}
+
+async function excluirPacote(id){
+  if(!confirm("Excluir pacote?")) return;
+
+  await db.collection("pacotes").doc(id).delete();
+
+  alert("🗑️ Pacote removido!");
+}
+function getDataHojeLocal() {
+  const hoje = new Date();
+  const ano = hoje.getFullYear();
+  const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+  const dia = String(hoje.getDate()).padStart(2, '0');
+
+  return `${ano}-${mes}-${dia}`; 
+}
+function mostrarStatusDias() {
+  const hoje = getDataHojeLocal();
+
+  let html = `<p><strong>Hoje (${new Date().toLocaleDateString('pt-BR')}):</strong> ${diasFechados.includes(hoje) ? '🔒 FECHADO' : '✅ ABERTO'}</p>`;
+
+  if(diasFechados.length > 0) {
+    html += '<p><strong>Dias Fechados:</strong></p>';
+
+    diasFechados.slice(-5).forEach(dia => {
+      const data = new Date(dia + "T00:00:00"); 
+      html += `<span class="badge" style="background:#e74c3c;">${data.toLocaleDateString('pt-BR')}</span>`;
+    });
+  }
+
+  document.getElementById("statusDias").innerHTML = html;
+}
+// Fechar modal clicando fora
+window.onclick = function(event) {
+  const modal = document.getElementById("adminModal");
+  if(event.target == modal) {
+    fecharAdmin();
+  }
+}
+</script>
+
+</body>
+</html>
