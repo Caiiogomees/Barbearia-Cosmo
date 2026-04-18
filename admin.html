@@ -532,18 +532,22 @@ input, select{
       <div id="listaAssinaturas"></div>
     </div>
       <!-- Adicionar Horário -->
-      <div class="section-title">➕ Adicionar Horário</div>
+      <div class="section-title">➕ Adicionar cliente</div>
       <input id="novoProf" placeholder="Nome do Profissional">
       <input id="novoHorario" placeholder="Horário (ex: 17:00)">
       <input id="dataAdicionar" type="date" style="margin-bottom:10px;">
-      <button class="success" onclick="adicionarHorario()">Adicionar Horário</button>
+      <button class="success" onclick="adicionarHorario()">Adicionar Cliente</button>
 
-      <!-- Remover Horário -->
-      <div class="section-title">➖ Remover Horário</div>
-      <input id="removerProf" placeholder="Nome do Profissional">
-      <input id="removerHorario" placeholder="Horário (ex: 17:00)">
-      <input id="dataRemover" type="date" style="margin-bottom:10px;">
-      <button class="danger" onclick="removerHorario()">Remover Horário</button>
+      <!-- Remover/adicionar horarios ao profissional -->
+      <div class="section-title">⏰ Gerenciar Horários Extra</div>
+      <input id="profHorarioFixo" placeholder="Nome do Profissional">
+      <input id="novoHorarioFixo" placeholder="Novo horário (ex: 10:30)">
+      <button class="success" onclick="adicionarHorarioExtra()">
+        Adicionar Horário Extra
+      </button>
+      <button class="danger" onclick="removerHorarioExtra()">
+        Remover Horário Extra
+      </button>
 
       <!-- Gerenciar Dias -->
       <div class="section-title">📅 Gerenciar Dias</div>
@@ -620,11 +624,33 @@ async function carregarDadosAdmin() {
       agenda[doc.id] = doc.data();
     });
 
-    // dias fechados
+    
+        // dias fechados (remove automaticamente os que já passaram)
     const diasDoc = await db.collection("config").doc("diasFechados").get();
-    diasFechados = (diasDoc.exists && diasDoc.data().lista)
+
+    let listaDias = (diasDoc.exists && diasDoc.data().lista)
       ? diasDoc.data().lista
       : [];
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    // mantém apenas hoje e dias futuros
+    const listaFiltrada = listaDias.filter(data => {
+      const dataObj = new Date(data + "T00:00:00");
+      return dataObj >= hoje;
+    });
+
+    diasFechados = listaFiltrada;
+
+    // se removeu dias antigos, atualiza no Firebase
+    if (JSON.stringify(listaDias) !== JSON.stringify(listaFiltrada)) {
+      await db.collection("config")
+        .doc("diasFechados")
+        .set({
+          lista: listaFiltrada
+        });
+    }
 
     // 🔥 BLOQUEIOS
     const bloqueioDoc = await db.collection("config").doc("bloqueios").get();
@@ -963,7 +989,11 @@ function mostrarStats() {
 
       Object.entries(profs).forEach(([prof, horarios]) => {
 
-        (horarios || []).forEach(h => {
+        const listaHorarios = Array.isArray(horarios)
+          ? horarios
+          : Object.values(horarios || {});
+
+        listaHorarios.forEach(h => {
 
           const horario = typeof h === "string" ? h : h.horario;
           const dataHora = new Date(`${data}T${horario}`);
@@ -1266,38 +1296,49 @@ async function liberar(data, prof, horario) {
   alert("✅ Horário liberado!");
 }
 
-function adicionarHorario() {
+async function adicionarHorario() {
   const prof = document.getElementById("novoProf").value.trim();
   const horario = document.getElementById("novoHorario").value.trim();
   const data = document.getElementById("dataAdicionar").value;
 
-  if(!prof || !horario || !data) {
+  if (!prof || !horario || !data) {
     return alert("❌ Preencha todos os campos!");
   }
 
-  if(diasFechados.includes(data)) {
+  if (diasFechados.includes(data)) {
     return alert("❌ Este dia está fechado!");
   }
 
-  if(!agenda[data]) agenda[data] = {};
-  if(!agenda[data][prof]) agenda[data][prof] = [];
+  // cria estrutura se não existir
+  if (!agenda[data]) agenda[data] = {};
+  if (!agenda[data][prof]) agenda[data][prof] = [];
 
-  // Verificar se horário já existe
-  if(agenda[data][prof].includes(horario)) {
-    return alert("❌ Este horário já está ocupado!");
+  // verifica se já existe
+  const jaExiste = agenda[data][prof].some(item => {
+    const h = typeof item === "string" ? item : item.horario;
+    return h === horario;
+  });
+
+  if (jaExiste) {
+    return alert("❌ Esse horário já existe!");
   }
 
-  agenda[data][prof].push(horario);
-  salvarAgendaFirebase();
-  salvarDiasFirebase();
-  
-  // Limpar campos
+  // adiciona horário extra
+  agenda[data][prof].push({
+    horario: horario,
+    nome: "Disponível",
+    extra: true
+  });
+
+  await db.collection("agenda").doc(data).set(agenda[data]);
+
   document.getElementById("novoProf").value = "";
   document.getElementById("novoHorario").value = "";
   document.getElementById("dataAdicionar").value = "";
-  
+
   carregarDadosAdmin();
-  alert(`✅ Horário ${horario} adicionado para ${prof} em ${new Date(data + "T00:00:00").toLocaleDateString('pt-BR')}!`);
+
+  alert("✅ Horário extra adicionado com sucesso!");
 }
 
 function removerHorario() {
@@ -1425,6 +1466,147 @@ function mostrarStatusDias() {
 
   document.getElementById("statusDias").innerHTML = html;
 }
+
+async function adicionarHorarioFixo() {
+  const prof = document.getElementById("profHorarioFixo").value.trim();
+  const horario = document.getElementById("novoHorarioFixo").value.trim();
+
+  if (!prof || !horario) {
+    return alert("Preencha tudo!");
+  }
+
+  const ref = db.collection("config").doc("horariosFixos");
+  const doc = await ref.get();
+
+  let dados = doc.exists ? doc.data() : {};
+
+  if (!dados[prof]) {
+    dados[prof] = [];
+  }
+
+  if (dados[prof].includes(horario)) {
+    return alert("Esse horário já existe!");
+  }
+
+  dados[prof].push(horario);
+
+  // ordena bonitinho
+  dados[prof].sort();
+
+  await ref.set(dados);
+
+  alert("✅ Horário adicionado!");
+}
+
+async function removerHorarioFixo() {
+  const prof = document.getElementById("profHorarioFixo").value.trim();
+  const horario = document.getElementById("novoHorarioFixo").value.trim();
+
+  if (!prof || !horario) {
+    return alert("Preencha tudo!");
+  }
+
+  const ref = db.collection("config").doc("horariosFixos");
+  const doc = await ref.get();
+
+  if (!doc.exists) return;
+
+  let dados = doc.data();
+
+  if (!dados[prof]) return;
+
+  dados[prof] = dados[prof].filter(h => h !== horario);
+
+  await ref.set(dados);
+
+  alert("🗑 Horário removido!");
+}
+async function adicionarHorarioExtra() {
+  const prof = document.getElementById("profHorarioFixo").value.trim();
+  const horario = document.getElementById("novoHorarioFixo").value.trim();
+
+  if (!prof || !horario) {
+    return alert("Preencha tudo!");
+  }
+
+  const hoje = new Date();
+
+  const ano = hoje.getFullYear();
+  const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+  const dia = String(hoje.getDate()).padStart(2, "0");
+
+  const data = `${ano}-${mes}-${dia}`;
+
+  const ref = db.collection("config").doc("horariosExtras");
+  const doc = await ref.get();
+
+  let dados = doc.exists ? doc.data() : {};
+
+  if (!dados[prof]) {
+    dados[prof] = {};
+  }
+
+  if (!dados[prof][data]) {
+    dados[prof][data] = [];
+  }
+
+  if (dados[prof][data].includes(horario)) {
+    return alert("Esse horário já foi adicionado.");
+  }
+
+  dados[prof][data].push(horario);
+  dados[prof][data].sort();
+
+  await ref.set(dados);
+
+  alert("✅ Horário extra adicionado!");
+}
+
+async function removerHorarioExtra() {
+  const prof = document.getElementById("profHorarioFixo").value.trim();
+  const horario = document.getElementById("novoHorarioFixo").value.trim();
+
+  if (!prof || !horario) {
+    return alert("Preencha tudo!");
+  }
+
+  const data = prompt("Digite a data do horário extra (AAAA-MM-DD):");
+
+  if (!data) {
+    return alert("Data obrigatória!");
+  }
+
+  const ref = db.collection("config").doc("horariosExtras");
+  const doc = await ref.get();
+
+  if (!doc.exists) {
+    return alert("Nenhum horário extra encontrado.");
+  }
+
+  let dados = doc.data();
+
+  if (!dados[prof] || !dados[prof][data]) {
+    return alert("Nenhum horário encontrado para esse profissional nessa data.");
+  }
+
+  dados[prof][data] = dados[prof][data].filter(h => h !== horario);
+
+  // limpa array vazio
+  if (dados[prof][data].length === 0) {
+    delete dados[prof][data];
+  }
+
+  // limpa profissional vazio
+  if (Object.keys(dados[prof]).length === 0) {
+    delete dados[prof];
+  }
+
+  await ref.set(dados);
+
+  alert("🗑 Horário extra removido!");
+}
+
+
 // Fechar modal clicando fora
 window.onclick = function(event) {
   const modal = document.getElementById("adminModal");

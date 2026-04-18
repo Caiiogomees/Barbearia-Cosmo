@@ -309,6 +309,7 @@ let nomeServico = "";
 let profissional = "";
 let horario = "";
 let bloqueios = {};
+let horariosExtras = {};
 
 
 let pacotes = [];
@@ -478,6 +479,11 @@ function escutarDadosTempoReal() {
       diasFechados = doc.exists ? doc.data().lista : [];
       atualizarTela();
     });
+  db.collection("config").doc("horariosExtras")
+  .onSnapshot(doc => {
+    horariosExtras = doc.exists ? doc.data() : {};
+    atualizarTela();
+  });
 }
 function atualizarTela() {
   gerarCalendario();
@@ -627,7 +633,19 @@ function escolherProfissional(p) {
   }
   const grid = document.getElementById("gridHorarios");
   grid.innerHTML = "";
-  const todosHorarios = profSelecionado.horarios;
+  // horários fixos do profissional
+  const horariosFixos = profSelecionado.horarios;
+
+// busca do documento config/horariosExtras
+  const extrasHoje =
+    horariosExtras?.[p]?.[dataSelecionada] || [];
+
+  // junta fixos + extras
+  const todosHorarios = [...new Set([
+    ...horariosFixos,
+    ...extrasHoje
+  ])].sort();
+
   const horariosOcupados = agenda[dataSelecionada]?.[p] || [];
   const bloqueados = (bloqueios?.[dataSelecionada]?.[p]) || []; 
   
@@ -660,6 +678,15 @@ if (grid.children.length === 0) {
 }
 }
 // 🔥 MUDA APENAS ESTAS FUNÇÕES no seu código atual:
+async function carregarHorariosExtras() {
+  const doc = await db.collection("config")
+    .doc("horariosExtras")
+    .get();
+
+  if (doc.exists) {
+    horariosExtras = doc.data();
+  }
+}
 
 function finalizar(h) {
   horario = h;
@@ -763,7 +790,7 @@ async function confirmarAgendamento() {
               `🕒 *Horário:* ${horario}\n\n` +
               `✅ *AGENDAMENTO CONFIRMADO!*`;
 
-  window.open(`https://wa.me/SEUNUMEROAQUI?text=${encodeURIComponent(msg)}`, '_blank');
+  window.open(`https://wa.me/5521992144025?text=${encodeURIComponent(msg)}`, '_blank');
 
   alert("✅ Horário reservado com sucesso!");
 }
@@ -794,18 +821,23 @@ function enviarWhats() {
               `👨‍💼 *Profissional:* ${profissional}\n` +
               `🕒 *Horário:* ${horario}\n\n` +
               `✅ *AGENDAMENTO CONFIRMADO!*\n` +
-              `📲 Entraremos em contato para confirmação final.`;
+              `📲 Siga nossa rede social @Barbershopcosmo.`;
   
   // 🔥 MUDA AQUI PELO SEU NÚMERO REAL
-  window.open(`https://wa.me/5511999999999?text=${encodeURIComponent(msg)}`, '_blank');
+  window.open(`https://wa.me/5521992144025?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 // Inicialização
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+  await carregarHorariosExtras();
+
   mostrarServicos();
-  escutarDadosTempoReal()
-//  escutarPacotesTempoReal();; // 🔥 AGORA VEM DO FIREBASE
+  escutarDadosTempoReal();
+
+  // escutarPacotesTempoReal();
 });
+
+
 </script>
 
 </body>
