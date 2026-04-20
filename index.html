@@ -272,7 +272,33 @@ button {
     padding-top: env(safe-area-inset-top);
   }
 }
+/* 🔥 BOTÃO INSTAGRAM PREMIUM */
+.instagram-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 15px;
+  color: white;
+  background: linear-gradient(
+    45deg,
+    #833AB4,
+    #C13584,
+    #E1306C,
+    #FD1D1D,
+    #F56040,
+    #FCAF45
+  );
+  transition: 0.25s;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
 
+.instagram-btn:hover {
+  transform: scale(1.03);
+  opacity: 0.95;
+}
 </style>
 </head>
 
@@ -288,11 +314,20 @@ button {
     <div class="calendario" id="calendario"></div>
     <p id="dataEscolhida" style="margin-top: 10px; font-weight: bold;"></p>
   </div>
-
   <div class="card fade" id="servicos"></div>
   <div class="card fade" id="profissionais" style="display:none;"></div>
   <div class="card fade" id="horarios" style="display:none;"></div>
   <div class="card fade" id="resumo" style="display:none;"></div>
+  <!-- 🔥 BOTÃO INSTAGRAM -->
+<div class="card fade" id="instagramCard">
+  <h3>📲 Siga-nos na rede social!</h3>
+  <p style="opacity:0.8; font-size:10px; margin-bottom:10px;">
+    Acompanhe novidades, cortes e promoções da Barbearia Cosmo
+  </p>
+  <button class="instagram-btn" onclick="abrirInstagram()">
+    📸 Seguir no Instagram
+  </button>
+</div>
   <div class="card fade" id="pacotes"style="display:none;"></div>
   <div id="confirmacao" style="display:none; margin-top:20px; font-weight:bold; color:#25D366;">
   ✅ Obrigado pelo agendamento! Finalize pelo WhatsApp.
@@ -660,24 +695,42 @@ function escolherProfissional(p) {
   const passou = dataHora < agora;
 
   // 🔥 SE NÃO PODE SER SELECIONADO → SIMPLESMENTE IGNORA
-  if (ocupado || bloqueado || passou) {
-    return; // ⬅️ NÃO MOSTRA NO GRID
+ // 🔥 horário passado some
+  if (passou) {
+    return;
   }
 
   const btn = document.createElement("div");
-  btn.className = "horario-btn";
-  btn.innerHTML = `<span style="color:#25D366">✅ ${h}</span>`;
-  btn.onclick = () => finalizar(h);
+
+  // 🔥 horário ocupado continua aparecendo
+  if (ocupado) {
+    btn.className = "horario-btn ocupado";
+    btn.innerHTML = `<span>❌ ${h}</span>`;
+  }
+
+  // 🔥 horário bloqueado continua aparecendo
+  else if (bloqueado) {
+    btn.className = "horario-btn bloqueado";
+    btn.innerHTML = `<span>🔒 ${h}</span>`;
+  }
+
+  // 🔥 horário disponível
+  else {
+    btn.className = "horario-btn";
+    btn.innerHTML = `<span style="color:#25D366">✅ ${h}</span>`;
+    btn.onclick = () => finalizar(h);
+  }
 
   grid.appendChild(btn);
-
 });
+
+
 
 if (grid.children.length === 0) {
   grid.innerHTML = `<p style="opacity:0.7">😕 Nenhum horário disponível</p>`;
 }
 }
-// 🔥 MUDA APENAS ESTAS FUNÇÕES no seu código atual:
+
 async function carregarHorariosExtras() {
   const doc = await db.collection("config")
     .doc("horariosExtras")
@@ -827,6 +880,9 @@ function enviarWhats() {
   window.open(`https://wa.me/5521992144025?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
+function abrirInstagram() {
+  window.open("https://www.instagram.com/barbershopcosmo?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==", "_blank");
+}
 // Inicialização
 document.addEventListener('DOMContentLoaded', async function() {
   await carregarHorariosExtras();
