@@ -185,8 +185,8 @@ input, select{
   max-height:90vh;
   overflow-y:auto;
   background:var(--card);
-  padding:25px;
-  border-radius:16px;
+  padding:15px;
+  border-radius:12px;
   border:1px solid var(--gold);
 }
 
@@ -344,67 +344,45 @@ input, select{
 }
 /* 🔥 OTIMIZAÇÕES CELULAR */
 @media (max-width: 480px) {
-  body {
-    padding: 10px;
-    background-attachment: scroll; /* Evita lag no scroll */
-  }
-  
+
   .container {
-    max-width: 100%;
-    padding: 15px 10px;
-    margin: 0;
+    padding: 10px;
   }
-  
-  h1 {
-    font-size: 24px;
-    margin: 10px 0;
-  }
-  
+
   .card {
-    padding: 20px 15px;
-    margin: 10px 0;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 14px;
   }
-  
-  button {
-    padding: 18px 16px;
-    font-size: 18px; /* Touch-friendly */
-    margin: 6px 0;
-    min-height: 56px; /* Altura mínima Apple */
+
+  h1 {
+    font-size: 20px;
   }
-  
-  .calendario {
-    padding: 10px 0;
-    gap: 8px;
+
+  h3 {
+    font-size: 15px;
+    margin-bottom: 6px;
   }
-  
-  .dia {
-    min-width: 65px;
-    padding: 10px 8px;
+
+  input {
+    padding: 10px;
     font-size: 14px;
+    margin: 6px 0;
   }
-  
-  .horarios-grid {
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 8px;
+
+  button {
+    padding: 10px;
+    font-size: 14px;
+    min-height: 44px;
+    border-radius: 8px;
   }
-  
-  .horario-btn {
-    padding: 12px 8px;
-    font-size: 13px;
+
+  .section-title {
+    font-size: 14px;
+    margin-top: 15px;
+    padding-bottom: 6px;
   }
-  
-  .input-nome {
-    padding: 16px;
-    font-size: 18px;
-    margin: 12px 0;
-  }
-  
-  /* Esconde logo de fundo em celular pequeno */
-  body::after {
-    width: 250px;
-    height: 250px;
-    opacity: 0.05;
-  }
+
 }
 
 /* Safe area para notch/iPhone */
@@ -506,7 +484,7 @@ input, select{
     <!-- Painel Admin -->
     <div id="painelAdmin" style="display:none;">
       
-      <div class="section-title">⛔ Bloquear Horario</div>
+      <div class="section-title"> Bloquear Horario</div>
 
       <input id="bloqProf" placeholder="Profissional">
       <input id="bloqHorario" placeholder="Horário (ex: 09:00)">
@@ -532,14 +510,14 @@ input, select{
       <div id="listaAssinaturas"></div>
     </div>
       <!-- Adicionar Horário -->
-      <div class="section-title">➕ Adicionar cliente</div>
+      <div class="section-title"> Adicionar cliente</div>
       <input id="novoProf" placeholder="Nome do Profissional">
       <input id="novoHorario" placeholder="Horário (ex: 17:00)">
       <input id="dataAdicionar" type="date" style="margin-bottom:10px;">
       <button class="success" onclick="adicionarHorario()">Adicionar Cliente</button>
 
       <!-- Remover/adicionar horarios ao profissional -->
-      <div class="section-title">⏰ Gerenciar Horários Extra</div>
+      <div class="section-title"> Gerenciar Horários Extra</div>
       <input id="profHorarioFixo" placeholder="Nome do Profissional">
       <input id="novoHorarioFixo" placeholder="Novo horário (ex: 10:30)">
       <button class="success" onclick="adicionarHorarioExtra()">
@@ -550,10 +528,10 @@ input, select{
       </button>
 
       <!-- Gerenciar Dias -->
-      <div class="section-title">📅 Gerenciar Dias</div>
+      <div class="section-title"> Gerenciar Dias</div>
       <input id="diaFechado" type="date">
-      <button class="warning" onclick="fecharDia()">🔒 Fechar Dia</button>
-      <button class="success" onclick="abrirDia()">🔓 Abrir Dia</button>
+      <button class="warning" onclick="fecharDia()"> Fechar Dia</button>
+      <button class="success" onclick="abrirDia()"> Abrir Dia</button>
 
       <div id="statusDias" style="margin-top:15px;"></div>
 
@@ -581,7 +559,8 @@ const PRECOS = {
   "Pigmentação": 20,
   "Reflexo": 50,
   "Reflexo + Corte": 90,
-  "Descoloração": 70
+  "Descoloração": 70,
+  "Descoloração + Corte": 100
 };
 function formatarDataLocal(dataISO) {
   if (!dataISO) return "";
