@@ -555,10 +555,11 @@ const servicos = {
   "Corte Máq E Tes":35,
   "Barba Simples": 15,
   "Barba Modelada":25,
+  "Corte Disfarçado + Barba": 50,
   "Pigmentação": 20,
-  "Reflexo": 50,
-  "Descoloração": 70,
-  "Corte Disfarçado + Barba": 50
+  "Reflexo": 55,
+  "Reflexo + Corte": 90,
+  "Descoloração": 70
 };
 
 function mostrarTela(telaId) {
@@ -835,13 +836,20 @@ async function confirmarAgendamento() {
   // 🔥 WHATSAPP
   const dataFormatada = document.getElementById("dataEscolhida").innerText;
 
-  const msg = `✂️ *BARBEARIA COSMO*\n\n` +
-              `👤 *Cliente:* ${nome}\n` +
-              `📅 *Data:* ${dataFormatada}\n` +
-              `✂️ *Serviço:* ${nomeServico}\n` +
-              `👨‍💼 *Profissional:* ${profissional}\n` +
-              `🕒 *Horário:* ${horario}\n\n` +
-              `✅ *AGENDAMENTO CONFIRMADO!*`;
+  const msg = `*BARBEARIA COSMO*
+
+Seu horario foi reservado com sucesso.
+
+Cliente: ${nome}
+Data: ${dataFormatada}
+Servico: ${nomeServico}
+Profissional: ${profissional}
+Horario: ${horario}
+
+Caso precise remarcar, entre em contato.
+
+Aguardamos voce!
+`;
 
   window.open(`https://wa.me/5521992144025?text=${encodeURIComponent(msg)}`, '_blank');
 
@@ -867,14 +875,20 @@ function enviarWhats() {
   if(!nome) return alert("👤 Digite seu nome completo!");
   
   const dataFormatada = document.getElementById("dataEscolhida").innerText;
-  const msg = `✂️ *BARBEARIA COSMO*\n\n` +
-              `👤 *Cliente:* ${nome}\n` +
-              `📅 *Data:* ${dataFormatada}\n` +
-              `✂️ *Serviço:* ${nomeServico}\n` +
-              `👨‍💼 *Profissional:* ${profissional}\n` +
-              `🕒 *Horário:* ${horario}\n\n` +
-              `✅ *AGENDAMENTO CONFIRMADO!*\n` +
-              `📲 Siga nossa rede social @Barbershopcosmo.`;
+  const msg = `*BARBEARIA COSMO*
+
+Seu horario foi reservado com sucesso.
+
+Cliente: ${nome}
+Data: ${dataFormatada}
+Servico: ${nomeServico}
+Profissional: ${profissional}
+Horario: ${horario}
+
+Caso precise remarcar, entre em contato.
+
+Aguardamos voce!
+`;
   
   // 🔥 MUDA AQUI PELO SEU NÚMERO REAL
   window.open(`https://wa.me/5521992144025?text=${encodeURIComponent(msg)}`, '_blank');

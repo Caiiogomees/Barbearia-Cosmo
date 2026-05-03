@@ -506,7 +506,7 @@ input, select{
     <!-- Painel Admin -->
     <div id="painelAdmin" style="display:none;">
       
-      <div class="section-title">⛔ Bloquear Turno</div>
+      <div class="section-title">⛔ Bloquear Horario</div>
 
       <input id="bloqProf" placeholder="Profissional">
       <input id="bloqHorario" placeholder="Horário (ex: 09:00)">
@@ -577,10 +577,11 @@ const PRECOS = {
   "Corte Máq E Tes":35,
   "Barba Simples": 15,
   "Barba Modelada":25,
+  "Corte Disfarçado + Barba": 50,
   "Pigmentação": 20,
   "Reflexo": 50,
-  "Descoloração": 70,
-  "Corte Disfarçado + Barba": 50
+  "Reflexo + Corte": 90,
+  "Descoloração": 70
 };
 function formatarDataLocal(dataISO) {
   if (!dataISO) return "";
