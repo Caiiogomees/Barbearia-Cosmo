@@ -116,7 +116,15 @@ body{
   opacity:0;
   transition:0.4s;
 }
+.card{
+  position: relative;
+  z-index: 1;
+}
 
+.card::before{
+  pointer-events: none;
+  z-index: 0;
+}
 .card:hover::before{
   opacity:1;
 }
@@ -142,11 +150,7 @@ button:hover{
   opacity: 0.95;
 }
 
-.primary{
-  background: linear-gradient(45deg, #d4af37, #f1c40f);
-  color:#000;
-  font-weight:600;
-}
+
 
 .primary:hover{
   box-shadow:0 5px 20px rgba(212,175,55,0.4);
@@ -426,7 +430,7 @@ input, select{
 </head>
 
 <body>
-  
+
 <div class="topbar">
   <div class="container header">
     <div style="display:flex; align-items:center; gap:10px;">
@@ -447,6 +451,9 @@ input, select{
 
     <div class="card">
       <h3>📊 Estatísticas</h3>
+      <button class="primary" onclick="abrirFaturamento()" style="margin-bottom:10px;">
+          Acessar Faturamento
+      </button>
       <div id="stats">Carregando...</div>
     </div>
 
@@ -541,6 +548,21 @@ input, select{
     </div>
   </div>
 </div>
+<div class="modal" id="modalFaturamento">
+    <div class="modal-content">
+
+      <h2>Profissional</h2>
+
+      <input id="profNomeLogin" placeholder="Nome do profissional">
+      <input id="profSenhaLogin" type="password" placeholder="Senha">
+
+      <button class="primary" onclick="loginProfissional()">Entrar</button>
+      <button class="danger" onclick="fecharFaturamento()">Fechar</button>
+
+      <div id="resultadoFaturamento" style="display:none;"></div>
+
+    </div>
+  </div>
 
 <script>
 let agenda = {};
@@ -553,15 +575,110 @@ const PRECOS = {
   "Corte Simples": 25,
   "Corte Disfarçado":35,
   "Corte Máq E Tes":35,
+  "Cavanhaque (a partir)":10,
+  "Sombrancelha":10,
+  "Corte + Sombrancelha": 40,
   "Barba Simples": 15,
   "Barba Modelada":25,
   "Corte Disfarçado + Barba": 50,
   "Pigmentação": 20,
+  "Corte + Pigmentação":55,
   "Reflexo": 50,
   "Reflexo + Corte": 90,
   "Descoloração": 70,
   "Descoloração + Corte": 100
 };
+
+const SENHAS_PROFISSIONAIS = {
+  "Thyago": "thyago4143",
+  "Val": "val2026"
+};
+function abrirFaturamento(){
+  document.getElementById("modalFaturamento").style.display = "flex";
+}
+
+function fecharFaturamento(){
+  document.getElementById("modalFaturamento").style.display = "none";
+
+  // limpa os campos
+  document.getElementById("profNomeLogin").value = "";
+  document.getElementById("profSenhaLogin").value = "";
+
+  // limpa resultado
+  document.getElementById("resultadoFaturamento").innerHTML = "";
+}
+function loginProfissional(){
+  const nome = document.getElementById("profNomeLogin").value;
+  const senha = document.getElementById("profSenhaLogin").value;
+
+  if(SENHAS_PROFISSIONAIS[nome] !== senha){
+    return alert("❌ Dados inválidos");
+  }
+
+  document.getElementById("resultadoFaturamento").style.display = "block";
+
+  mostrarFaturamentoProfissional(nome);
+}
+
+
+function mostrarFaturamentoProfissional(prof){
+
+  let total = 0;
+  let atendimentos = 0;
+  let resumoServicos = {};
+  Object.entries(agenda).forEach(([data, profs]) => {
+
+    if(profs[prof]){
+      profs[prof].forEach(h => {
+
+        const servico = h.servicos || h.servico || "Corte";
+
+      if(!PRECOS[servico]) return;
+
+      const valor = PRECOS[servico];
+
+      total += valor;
+      atendimentos++;
+
+      // 🔥 RESUMO POR SERVIÇO
+      if (!resumoServicos[servico]) {
+        resumoServicos[servico] = { qtd: 0, total: 0 };
+      }
+
+      resumoServicos[servico].qtd++;
+      resumoServicos[servico].total += valor;
+
+      });
+    }
+
+  });
+ let resumoHTML = `
+    <div style="margin-top:15px;">
+      <h4 style="color:#d4af37;">📊 Seus Serviços</h4>
+  `;
+
+  Object.entries(resumoServicos).forEach(([nome, dados]) => {
+    resumoHTML += `
+      <div style="background:#222; padding:10px; border-radius:8px; margin:5px 0;">
+        <strong>${nome}</strong><br>
+        ✂️ ${dados.qtd} atendimentos<br>
+        💰 R$ ${dados.total}
+      </div>
+    `;
+  });
+
+  resumoHTML += `</div>`;
+  document.getElementById("resultadoFaturamento").innerHTML = `
+    <div style="background:#111; padding:15px; border-radius:12px;">
+      <h3>${prof}</h3>
+      ✂️ ${atendimentos} atendimentos <br>
+      💰 R$ ${total}
+    </div>
+
+    ${resumoHTML}
+  `;
+ 
+}
 function formatarDataLocal(dataISO) {
   if (!dataISO) return "";
 
@@ -961,6 +1078,7 @@ function mostrarStats() {
   let hojeTotal = 0;
 
   let proximosHoje = [];
+  
 
   const agora = new Date();
 
@@ -1074,23 +1192,8 @@ function mostrarStats() {
     </div>
 
   </div>
-
-  <div style="margin-top:20px;">
-    <h3 style="color:#d4af37;">📊 Por Profissional</h3>
   `;
 
-  Object.keys(porProf).forEach(prof => {
-    html += `
-      <div style="margin:8px 0; padding:10px; background:#222; border-radius:8px;">
-        <strong>${prof}</strong><br>
-        ✂️ ${porProf[prof]} atendimentos<br>
-        💰 R$ ${faturamentoPorProf[prof] || 0}
-      </div>
-    `;
-  });
-
-
-  html += `</div>`;
 
   document.getElementById("stats").innerHTML = html;
 
@@ -1157,7 +1260,7 @@ function mostrarAgendaHoje() {
         <div class="item-agenda">
           <strong>${item.horario}</strong> - ${item.prof}<br>
           👤 ${item.nome}<br>
-          🛠️ ${item.servico}<
+          🛠️ ${item.servico}
           
         </div>
       `;
@@ -1217,7 +1320,13 @@ function mostrarAgendaCompleta() {
         html += `<div style="margin:10px 0;">`;
         html += `<strong>📅 ${dataFormatada}</strong><br>`;
 
-        (horarios || []).forEach(h => {
+        (horarios || [])
+        .sort((a, b) => {
+          const h1 = typeof a === "string" ? a : a.horario;
+          const h2 = typeof b === "string" ? b : b.horario;
+          return h1.localeCompare(h2);
+        })
+        .forEach(h => {
 
           if (!h) return;
           const horario = typeof h === "string" ? h : h.horario;
@@ -1589,9 +1698,15 @@ async function removerHorarioExtra() {
 
 // Fechar modal clicando fora
 window.onclick = function(event) {
-  const modal = document.getElementById("adminModal");
-  if(event.target == modal) {
+  const adminModal = document.getElementById("adminModal");
+  const faturamentoModal = document.getElementById("modalFaturamento");
+
+  if (event.target === adminModal) {
     fecharAdmin();
+  }
+
+  if (event.target === faturamentoModal) {
+    fecharFaturamento();
   }
 }
 </script>
