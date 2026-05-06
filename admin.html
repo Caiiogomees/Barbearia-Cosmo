@@ -590,7 +590,7 @@ const PRECOS = {
 };
 
 const SENHAS_PROFISSIONAIS = {
-  "Thyago": "thyago4143",
+  "Thiago": "thiago4143",
   "Val": "val2026"
 };
 function abrirFaturamento(){
@@ -628,10 +628,15 @@ function mostrarFaturamentoProfissional(prof){
   let resumoServicos = {};
   Object.entries(agenda).forEach(([data, profs]) => {
 
-    if(profs[prof]){
-      profs[prof].forEach(h => {
+  if(profs[prof]){
 
-        const servico = h.servicos || h.servico || "Corte";
+    const lista = Array.isArray(profs[prof])
+      ? profs[prof]
+      : Object.values(profs[prof] || {});
+
+    lista.forEach(h => {
+
+      const servico = h.servicos || h.servico || "Corte";
 
       if(!PRECOS[servico]) return;
 
@@ -640,7 +645,7 @@ function mostrarFaturamentoProfissional(prof){
       total += valor;
       atendimentos++;
 
-      // 🔥 RESUMO POR SERVIÇO
+      // resumo
       if (!resumoServicos[servico]) {
         resumoServicos[servico] = { qtd: 0, total: 0 };
       }
@@ -648,10 +653,12 @@ function mostrarFaturamentoProfissional(prof){
       resumoServicos[servico].qtd++;
       resumoServicos[servico].total += valor;
 
-      });
-    }
+    });
+  }
 
   });
+
+ 
  let resumoHTML = `
     <div style="margin-top:15px;">
       <h4 style="color:#d4af37;">📊 Seus Serviços</h4>
