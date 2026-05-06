@@ -559,8 +559,8 @@ const servicos = {
   "Corte Disfarçado":35,
   "Corte Máq E Tes":35,
   "Cavanhaque (a partir)":10,
-  "Sombrancelha":10,
-  "Corte + Sombrancelha": 40,
+  "Sobrancelha":10,
+  "Corte + Sobrancelha": 40,
   "Barba Simples": 15,
   "Barba Modelada":25,
   "Corte Disfarçado + Barba": 50,
@@ -808,7 +808,7 @@ async function confirmarAgendamento() {
           usarPacote = true;
           docRef = snap.docs[0].ref;
         } else {
-          alert("⚠️ Seu pacote acabou, mas você pode agendar normalmente.");
+          alert(" Seu pacote acabou, mas você pode agendar normalmente.");
         }
       }
     }
@@ -825,7 +825,7 @@ async function confirmarAgendamento() {
   const jaExiste = dados[profissional].some(x => (x.horario || x) === horario);
 
   if(jaExiste){
-    return alert("❌ Esse horário acabou de ser ocupado!");
+    return alert(" Esse horário acabou de ser ocupado!");
   }
 
   dados[profissional].push({
@@ -853,10 +853,10 @@ const WHATSAPP_PROFISSIONAIS = {
   "Thiago": "5521994240141"
 };
 
-// 🔥 pega número correto
+//  pega número correto
 const numero = WHATSAPP_PROFISSIONAIS[profissional] || "5521992144025";
 
-// 🔥 mensagem limpa (sem emoji, sem risco de bug)
+//  mensagem limpa (sem emoji, sem risco de bug)
 const msg = 
 `BARBEARIA COSMO
 
