@@ -526,6 +526,7 @@ input, select{
       <!-- Remover/adicionar horarios ao profissional -->
       <div class="section-title"> Gerenciar Horários Extra</div>
       <input id="profHorarioFixo" placeholder="Nome do Profissional">
+      <input id="dataExtra" type="date">
       <input id="novoHorarioFixo" placeholder="Novo horário (ex: 10:30)">
       <button class="success" onclick="adicionarHorarioExtra()">
         Adicionar Horário Extra
@@ -568,6 +569,7 @@ input, select{
 let agenda = {};
 let diasFechados = [];
 let bloqueios = {};
+let horariosExtras = {};
 
 const PRECOS = {
   "Corte":25,
@@ -718,6 +720,16 @@ function escutarAgendaTempoReal() {
     mostrarAgendaHoje();
   });
 }
+function escutarHorariosExtras(){
+  db.collection("config").doc("horariosExtras")
+    .onSnapshot(doc => {
+      horariosExtras = doc.exists ? doc.data() : {};
+
+      // 🔥 atualiza tela automaticamente
+      mostrarAgendaHoje();
+      mostrarAgendaCompleta();
+    });
+}
 async function carregarDadosAdmin() {
   try {
 
@@ -776,7 +788,8 @@ async function carregarDadosAdmin() {
 document.addEventListener('DOMContentLoaded', function() {
   escutarAgendaTempoReal();
   escutarConfigTempoReal();
-  escutarPacotesPublico(); // o
+  escutarPacotesPublico();
+   // o
 });
 
 function escutarConfigTempoReal() {
@@ -1234,10 +1247,27 @@ function mostrarAgendaHoje() {
 
   if (agenda[hoje]) {
     Object.entries(agenda[hoje]).forEach(([prof, horarios]) => {
-      (horarios || []).forEach(h => {
+
+      let listaFinal = [...(horarios || [])];
+
+      // 🔥 adiciona horários extras
+      if (horariosExtras[prof] && horariosExtras[prof][hoje]) {
+        horariosExtras[prof][hoje].forEach(h => {
+          listaFinal.push({
+            horario: h,
+            nome: "Extra",
+            servico: "Extra"
+          });
+        });
+      }
+
+      listaFinal.forEach(h => {
 
         const horario = typeof h === "string" ? h : h.horario;
-        const nome = typeof h === "string" ? "Cliente" : h.nome;
+        const nome = typeof h === "string"
+          ? "Cliente"
+          : (h.nome === "Extra" ? "🟡 Horário Extra" : h.nome);
+
         const servico = h.servicos || h.servico || "Corte";
 
         const dataHora = new Date(`${hoje}T${horario}`);
@@ -1251,7 +1281,9 @@ function mostrarAgendaHoje() {
             prof
           });
         }
+
       });
+
     });
   }
 
@@ -1268,7 +1300,6 @@ function mostrarAgendaHoje() {
           <strong>${item.horario}</strong> - ${item.prof}<br>
           👤 ${item.nome}<br>
           🛠️ ${item.servico}
-          
         </div>
       `;
     });
@@ -1620,18 +1651,11 @@ async function removerHorarioFixo() {
 async function adicionarHorarioExtra() {
   const prof = document.getElementById("profHorarioFixo").value.trim();
   const horario = document.getElementById("novoHorarioFixo").value.trim();
+  const data = document.getElementById("dataExtra").value;
 
-  if (!prof || !horario) {
+  if (!prof || !horario || !data) {
     return alert("Preencha tudo!");
   }
-
-  const hoje = new Date();
-
-  const ano = hoje.getFullYear();
-  const mes = String(hoje.getMonth() + 1).padStart(2, "0");
-  const dia = String(hoje.getDate()).padStart(2, "0");
-
-  const data = `${ano}-${mes}-${dia}`;
 
   const ref = db.collection("config").doc("horariosExtras");
   const doc = await ref.get();
@@ -1716,6 +1740,7 @@ window.onclick = function(event) {
     fecharFaturamento();
   }
 }
+
 </script>
 
 </body>

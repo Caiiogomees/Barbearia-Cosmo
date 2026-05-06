@@ -346,7 +346,12 @@ let horario = "";
 let bloqueios = {};
 let horariosExtras = {};
 
-
+function escutarHorariosExtras() {
+  db.collection("config").doc("horariosExtras")
+    .onSnapshot(doc => {
+      horariosExtras = doc.exists ? doc.data() : {};
+    });
+}
 let pacotes = [];
 
 function escutarPacotesTempoReal() {
@@ -685,7 +690,7 @@ function escolherProfissional(p) {
   const todosHorarios = [...new Set([
     ...horariosFixos,
     ...extrasHoje
-  ])].sort();
+  ])].sort((a, b) => a.localeCompare(b));
 
   const horariosOcupados = agenda[dataSelecionada]?.[p] || [];
   const bloqueados = (bloqueios?.[dataSelecionada]?.[p]) || []; 
@@ -920,6 +925,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   mostrarServicos();
   escutarDadosTempoReal();
+  escutarHorariosExtras();
 
   // escutarPacotesTempoReal();
 });
