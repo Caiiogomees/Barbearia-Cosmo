@@ -592,7 +592,7 @@ const PRECOS = {
 };
 
 const SENHAS_PROFISSIONAIS = {
-  "Thiago": "thiago4143",
+  "Thyago": "thyago4143",
   "Val": "val2026"
 };
 function abrirFaturamento(){
@@ -1310,6 +1310,8 @@ function mostrarAgendaHoje() {
 
 function mostrarAgendaCompleta() {
   let html = "";
+  const hoje = new Date();
+  hoje.setHours(0,0,0,0);
 
   if(Object.keys(agenda).length === 0) {
     document.getElementById("agendaCompleta").innerHTML = "<p>📭 Sem agendamentos</p>";
@@ -1320,6 +1322,11 @@ function mostrarAgendaCompleta() {
 
   // Organiza por profissional
  Object.entries(agenda || {}).forEach(([data, profs]) => {
+
+  const dataAgenda = new Date(data + "T00:00:00");
+
+  // 🔥 ignora datas passadas
+  if (dataAgenda < hoje) return;
 
   if (!profs || typeof profs !== "object") return;
 
