@@ -628,6 +628,14 @@ function mostrarFaturamentoProfissional(prof){
   let total = 0;
   let atendimentos = 0;
   let resumoServicos = {};
+  let faturamentoHoje = 0;
+  let faturamentoMes = 0;
+
+  const hoje = getDataHojeLocal();
+
+  const agora = new Date();
+  const mesAtual = agora.getMonth();
+  const anoAtual = agora.getFullYear();
   Object.entries(agenda).forEach(([data, profs]) => {
 
   if(profs[prof]){
@@ -646,6 +654,20 @@ function mostrarFaturamentoProfissional(prof){
 
       total += valor;
       atendimentos++;
+      // faturamento do dia
+      if(data === hoje){
+        faturamentoHoje += valor;
+      }
+
+      // faturamento do mês
+      const dataObj = new Date(data + "T00:00:00");
+
+      if(
+        dataObj.getMonth() === mesAtual &&
+        dataObj.getFullYear() === anoAtual
+      ){
+        faturamentoMes += valor;
+      }
 
       // resumo
       if (!resumoServicos[servico]) {
@@ -678,13 +700,37 @@ function mostrarFaturamentoProfissional(prof){
 
   resumoHTML += `</div>`;
   document.getElementById("resultadoFaturamento").innerHTML = `
-    <div style="background:#111; padding:15px; border-radius:12px;">
-      <h3>${prof}</h3>
-      ✂️ ${atendimentos} atendimentos <br>
-      💰 R$ ${total}
+
+  <div style="
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:10px;
+  margin-bottom:15px;
+  ">
+
+    <div style="background:#111;padding:15px;border-radius:12px;">
+      <h3 style="margin:0">${prof}</h3>
+      ✂️ ${atendimentos} atendimentos
     </div>
 
-    ${resumoHTML}
+    <div style="background:#111;padding:15px;border-radius:12px;">
+      <strong>💰 Hoje</strong><br>
+      R$ ${faturamentoHoje}
+    </div>
+
+    <div style="background:#111;padding:15px;border-radius:12px;">
+      <strong>📅 Mês</strong><br>
+      R$ ${faturamentoMes}
+    </div>
+
+    <div style="background:#111;padding:15px;border-radius:12px;">
+      <strong>🏆 Total</strong><br>
+      R$ ${total}
+    </div>
+
+  </div>
+
+  ${resumoHTML}
   `;
  
 }
@@ -1098,7 +1144,8 @@ function mostrarStats() {
   let hojeTotal = 0;
 
   let proximosHoje = [];
-  
+  let totalMes = 0;
+  let totalHistorico = 0;
 
   const agora = new Date();
 
@@ -1124,20 +1171,32 @@ function mostrarStats() {
 
           const valor = PRECOS[servico];
 
-          const dataObj = new Date(data);
+          const [ano, mes, dia] = data.split("-").map(Number);
+          const dataObj = new Date(ano, mes - 1, dia);
           const hojeObj = new Date();
+          const mesAtual = hojeObj.getMonth();
+          const anoAtual = hojeObj.getFullYear();
 
           const mesmoMes =
-            dataObj.getMonth() === hojeObj.getMonth() &&
-            dataObj.getFullYear() === hojeObj.getFullYear();
+            dataObj.getMonth() === mesAtual &&
+            dataObj.getFullYear() === anoAtual;
 
-          // 🔥 TOTAL (histórico completo)
-          total++;
+          // 🔥 HISTÓRICO COMPLETO
+
+          totalHistorico++;
           faturamentoTotal += valor;
 
-          // 💰 por profissional
+          // ranking de profissionais
           porProf[prof] = (porProf[prof] || 0) + 1;
-          faturamentoPorProf[prof] = (faturamentoPorProf[prof] || 0) + valor;
+
+          faturamentoPorProf[prof] =
+            (faturamentoPorProf[prof] || 0) + valor;
+
+          // apenas mês atual
+          if (mesmoMes) {
+            totalMes++;
+          }
+
 
           // 🟢 FUTURO (previsto)
           if (!passou) {
@@ -1180,8 +1239,19 @@ function mostrarStats() {
   <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;">
 
     <div style="background:#111; padding:15px; border-radius:12px; text-align:center;">
-      <h2 style="margin:0; color:#d4af37;">${total}</h2>
-      <small>Total Agendamentos</small>
+      <h2 style="margin:0; color:#d4af37;">${totalMes}</h2>
+      <small>Agendamentos do Mês</small>
+    </div>
+    <div style="
+    background:#111;
+    padding:15px;
+    border-radius:12px;
+    text-align:center;
+    ">
+      <h2 style="margin:0; color:#9b59b6;">
+        ${totalHistorico}
+      </h2>
+      <small>Histórico Total de Agendamentos</small>
     </div>
 
     <div style="background:#111; padding:15px; border-radius:12px; text-align:center;">
@@ -1207,10 +1277,15 @@ function mostrarStats() {
     </div>
 
     <div style="background:#111; padding:15px; border-radius:12px; text-align:center;">
-      <h2 style="margin:0; color:#f1c40f;">${topProf}</h2>
-      <small>Top Profissional</small>
-    </div>
+      <h2 style="margin:0; color:#f1c40f;">
+      🏆 ${topProf}
+      </h2>
 
+      <small>
+      ${porProf[topProf] || 0} atendimentos
+      </small>
+    </div>
+    
   </div>
   `;
 
