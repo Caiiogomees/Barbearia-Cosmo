@@ -573,7 +573,6 @@ let horariosExtras = {};
 
 const PRECOS = {
   "Corte":25,
-  "Pezinho":10,
   "Corte Simples": 25,
   "Corte Disfarçado":35,
   "Corte Máq E Tes":35,
@@ -1451,14 +1450,59 @@ function mostrarAgendaCompleta() {
           if (!h) return;
           const horario = typeof h === "string" ? h : h.horario;
           const nome = typeof h === "string" ? "Cliente" : h.nome;
-
+          const telefone = typeof h === "string" ? "" : (h.telefone || "");
+          const lembreteEnviado = typeof h === "string"
+            ? false
+            : (h.lembreteEnviado || false);
           html += `
             <span class="badge" style="background:#e74c3c;">
-              ${horario} - ${nome}
-              <button class="danger" onclick="liberar('${data}','${prof}','${horario}')" 
-              style="margin-left:5px; padding:2px 6px;">✕</button>
-            </span>
-          `;
+            ${horario} - ${nome}
+            
+            ${lembreteEnviado
+  ? `
+            <button
+              disabled
+              style="
+                margin-left:5px;
+                padding:2px 6px;
+                background:#27ae60;
+                color:white;
+                border:none;
+                border-radius:4px;
+              "
+            >
+              ✅
+            </button>
+          `
+          : `
+            <button
+              onclick="enviarLembrete('${nome}','${telefone}','${horario}','${prof}','${data}')"
+              style="
+                margin-left:5px;
+                padding:2px 6px;
+                background:#f1c40f;
+                color:black;
+                border:none;
+                border-radius:4px;
+                cursor:pointer;
+              "
+            >
+              📲
+            </button>
+          `
+        }
+
+            <button
+              class="danger"
+              onclick="liberar('${data}','${prof}','${horario}')"
+              style="margin-left:5px; padding:2px 6px;"
+            >
+              ✕
+            </button>
+
+          </span>
+        `;
+        
         });
 
         html += `</div>`;
@@ -1822,7 +1866,49 @@ window.onclick = function(event) {
     fecharFaturamento();
   }
 }
+async function enviarLembrete(nome, telefone, horario, profissional, data){
 
+  if(!telefone){
+    alert("Este cliente não possui telefone cadastrado.");
+    return;
+  }
+  if(!confirm(`Confirmar envio do lembrete para ${nome}?`)){
+    return;
+  }
+  
+  const msg =
+`Olá ${nome}!
+
+Passando para lembrar que seu horário na Barbearia Cosmo será às ${horario} com ${profissional}.
+
+Em caso de cancelamento ou remarcação, entre em contato.
+
+Aguardamos você, até breve!`;
+
+  window.open(
+    `https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`,
+    "_blank"
+  );
+
+  const lista = agenda[data][profissional];
+
+  const cliente = lista.find(
+    c => c.horario === horario && c.nome === nome
+  );
+
+  if(cliente){
+    cliente.lembreteEnviado = true;
+
+    await db
+      .collection("agenda")
+      .doc(data)
+      .update({
+        [profissional]: lista
+      });
+
+    mostrarAgendaCompleta();
+  }
+}
 </script>
 
 </body>

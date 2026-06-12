@@ -554,7 +554,6 @@ const PROFISSIONAIS = [
 
 //ALTERACOES DE SERVICOS
 const servicos = {
-  "Pezinho":10,
   "Corte Simples": 25,
   "Corte Disfarçado":35,
   "Corte Máq E Tes":35,
@@ -768,8 +767,10 @@ function finalizar(h) {
       <strong>🕒 Horário:</strong> ${h}
     </div>
     <input class="input-nome" id="nomeCliente" placeholder="👤 Seu nome completo *" required>
+    <input class="input-nome" id="telefoneCliente" placeholder="📱 WhatsApp com DDD" style="margin-top:10px;">
+
     <button class="whatsapp" onclick="confirmarAgendamento()">
-      📱 Confirmar no WhatsApp
+      📱 Confirme o agendamento no WhatsApp
     </button>
     <p style="font-size: 12px; opacity: 0.8; margin-top: 10px;">
       * Clique para confirmar e reservar o horário
@@ -780,6 +781,11 @@ function finalizar(h) {
 async function confirmarAgendamento() {
   const nome = document.getElementById("nomeCliente").value.trim();
   if(!nome) return alert("👤 Digite seu nome completo!");
+  const telefone = document.getElementById("telefoneCliente").value.trim();
+
+  if(!telefone){
+    return alert("📱 Informe seu WhatsApp!");
+  }
 
   let usarPacote = false;
   let docRef = null;
@@ -831,7 +837,10 @@ async function confirmarAgendamento() {
   dados[profissional].push({
     horario: horario,
     nome: nome,
-    servicos: nomeServico
+    telefone,
+    servicos: nomeServico,
+    lembreteEnviado: false
+
   });
 
   await ref.set(dados);
