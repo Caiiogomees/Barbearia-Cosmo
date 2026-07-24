@@ -200,71 +200,117 @@ button {
 #resumo {
   display: none;
 }
+
 /*  OTIMIZAÇÕES CELULAR */
 @media (max-width: 480px) {
   body {
-    padding: 10px;
-    background-attachment: scroll; /* Evita lag no scroll */
+    padding: 8px;
+    background-attachment: scroll;
   }
   
   .container {
     max-width: 100%;
-    padding: 15px 10px;
+    padding: 12px 8px;
     margin: 0;
   }
   
   h1 {
-    font-size: 24px;
-    margin: 10px 0;
+    font-size: 22px;
+    margin: 8px 0;
   }
   
   .card {
-    padding: 20px 15px;
-    margin: 10px 0;
+    padding: 14px 12px;
+    margin: 8px 0;
+    border-radius: 16px;
   }
   
   button {
-    padding: 18px 16px;
-    font-size: 18px; /* Touch-friendly */
-    margin: 6px 0;
-    min-height: 56px; /* Altura mínima Apple */
+    padding: 13px 12px;
+    font-size: 15px;
+    line-height: 1.2;
+    margin: 5px 0;
+    min-height: 46px;
+    border-radius: 10px;
+    white-space: normal;
+    word-break: normal;
+  }
+
+  .voltar {
+    width: auto;
+    padding: 10px 14px;
+    font-size: 14px;
+    min-height: 40px;
   }
   
   .calendario {
-    padding: 10px 0;
-    gap: 8px;
+    padding: 8px 0;
+    gap: 7px;
   }
   
   .dia {
-    min-width: 65px;
-    padding: 10px 8px;
-    font-size: 14px;
+    min-width: 62px;
+    padding: 9px 7px;
+    font-size: 13px;
+    border-radius: 10px;
   }
   
   .horarios-grid {
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 7px;
   }
   
   .horario-btn {
-    padding: 12px 8px;
+    padding: 10px 6px;
     font-size: 13px;
+    min-height: 42px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .input-nome {
-    padding: 16px;
-    font-size: 18px;
-    margin: 12px 0;
+    padding: 13px 12px;
+    font-size: 16px;
+    margin: 9px 0;
+  }
+
+  .instagram-btn {
+    padding: 13px 12px;
+    font-size: 15px;
+    min-height: 46px;
+    border-radius: 11px;
   }
   
-  /* Esconde logo de fundo em celular pequeno */
   body::after {
-    width: 250px;
-    height: 250px;
+    width: 220px;
+    height: 220px;
     opacity: 0.05;
   }
 }
+@media (max-width: 360px) {
+  button {
+    font-size: 14px;
+    padding: 12px 10px;
+    min-height: 44px;
+  }
 
+  .horarios-grid {
+    grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+    gap: 6px;
+  }
+
+  .horario-btn {
+    font-size: 12px;
+    padding: 9px 5px;
+  }
+
+  .dia {
+    min-width: 58px;
+    font-size: 12px;
+  }
+}
 /* Safe area para notch/iPhone */
 @supports(padding: max(0px)) {
   body {
@@ -305,18 +351,28 @@ button {
 <body>
 
 <div class="container">
-  <img src="logo-bg.png" style="width:200px; margin-bottom:10px;"> 
-  <h1>✂️ Barbearia Cosmo</h1>
-  <p style="margin: -10px 0 20px 0; opacity: 0.9;">Agende seu horário ja!</p>
+  <div class="hero">
+    <img src="logo-bg.png" style="width:300px; margin-bottom:10px;">
+    <h1>Barbearia Cosmo</h1>
+    <p>
+    Seu corte, seu estilo.<br>
+    Agende em poucos segundos.
+    </p>
+    <div class="social-proof">
+    ⭐ Clientes satisfeitos
+    &nbsp; • &nbsp;
+    ✂️ Especialistas em cortes
+    </div>
+    </div>
 
-  <div class="card fade">
+  <div class="card fade" id="cardCalendario" style="display:none;">
     <h3>📅 Escolha o dia</h3>
     <div class="calendario" id="calendario"></div>
     <p id="dataEscolhida" style="margin-top: 10px; font-weight: bold;"></p>
   </div>
-  <div class="card fade" id="servicos"></div>
   <div class="card fade" id="profissionais" style="display:none;"></div>
   <div class="card fade" id="horarios" style="display:none;"></div>
+  <div class="card fade" id="servicos"></div>
   <div class="card fade" id="resumo" style="display:none;"></div>
   <!-- 🔥 BOTÃO INSTAGRAM -->
 <div class="card fade" id="instagramCard">
@@ -572,7 +628,7 @@ const servicos = {
 };
 
 function mostrarTela(telaId) {
-  const telas = ["servicos", "profissionais", "horarios", "resumo"];
+  const telas = ["profissionais","horarios","servicos", "resumo"];
 
   telas.forEach(id => {
     const el = document.getElementById(id);
@@ -611,6 +667,9 @@ function gerarCalendario() {
         document.getElementById("dataEscolhida").innerText = d.toLocaleDateString("pt-BR", {
           weekday: "long", day: "numeric", month: "long"
         });
+        if(profissional && nomeServico){
+          escolherProfissional(profissional);
+        }
       };
     }
     
@@ -638,25 +697,33 @@ function mostrarServicos() {
 }
 
 function escolherServico(nome) {
-  if(!dataSelecionada) return alert("👆 Primeiro escolha um DIA!");
-  nomeServico = nome;
-  document.getElementById("servicos").style.display = "none";
+  if(!profissional) return alert("Primeiro escolha um barbeiro!");
 
-  document.getElementById("horarios").innerHTML = "";
-  // 🔥 PROFISSIONAIS ESTÁTICOS - SEMPRE MOSTRA TODOS
+  nomeServico = nome;
+
+  document.getElementById("servicos").style.display = "none";
+  document.getElementById("cardCalendario").style.display = "block";
+  document.getElementById("horarios").style.display = "none";
+}
+
+function mostrarProfissionais() {
+  mostrarTela("profissionais");
+
   const div = document.getElementById("profissionais");
   div.style.display = "block";
-  div.innerHTML = `<button class="voltar" onclick="mostrarServicos()">⬅ Voltar</button><h3>👨‍💼 Escolha o Profissional</h3>`;
-  
+  div.innerHTML = "<h3>Escolha seu barbeiro</h3>";
+
   PROFISSIONAIS.forEach(prof => {
     const btn = document.createElement("button");
     btn.className = "opcao";
     btn.innerText = prof.nome;
-    btn.onclick = () => escolherProfissional(prof.nome);
+    btn.onclick = () => {
+      profissional = prof.nome;
+      mostrarServicos();
+    };
     div.appendChild(btn);
   });
 }
-
 function escolherProfissional(p) {
   profissional = p;
 
@@ -932,7 +999,7 @@ function abrirInstagram() {
 document.addEventListener('DOMContentLoaded', async function() {
   await carregarHorariosExtras();
 
-  mostrarServicos();
+  mostrarProfissionais();
   escutarDadosTempoReal();
   escutarHorariosExtras();
 

@@ -347,46 +347,194 @@ input, select{
   }
 }
 /* 🔥 OTIMIZAÇÕES CELULAR */
+/* OTIMIZAÇÕES CELULAR */
 @media (max-width: 480px) {
+  body {
+    background-attachment: scroll;
+  }
 
   .container {
-    padding: 10px;
+    padding: 8px;
+  }
+
+  .topbar {
+    padding: 8px 0;
+  }
+
+  .header {
+    margin-bottom: 8px;
+    gap: 8px;
+  }
+
+  .header h1 {
+    font-size: 19px;
+    line-height: 1.2;
+  }
+
+  .header img {
+    width: 58px !important;
+    margin-bottom: 0 !important;
+  }
+
+  .dashboard {
+    gap: 10px;
   }
 
   .card {
     padding: 12px;
-    margin: 8px 0;
+    margin: 7px 0;
     border-radius: 14px;
+    box-shadow: 0 6px 22px rgba(0,0,0,0.45);
+  }
+
+  .card:hover {
+    transform: none;
   }
 
   h1 {
     font-size: 20px;
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-size: 19px;
+    line-height: 1.2;
   }
 
   h3 {
     font-size: 15px;
-    margin-bottom: 6px;
+    line-height: 1.25;
+    margin: 0 0 8px;
   }
 
-  input {
-    padding: 10px;
-    font-size: 14px;
+  input,
+  select {
+    padding: 11px 10px;
+    font-size: 15px;
     margin: 6px 0;
+    border-radius: 8px;
   }
 
   button {
-    padding: 10px;
+    padding: 10px 12px;
     font-size: 14px;
-    min-height: 44px;
+    line-height: 1.2;
+    min-height: 42px;
     border-radius: 8px;
+    white-space: normal;
+  }
+
+  .modal {
+    align-items: flex-start;
+    padding: 10px 6px;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-height: calc(100vh - 20px);
+    padding: 12px;
+    border-radius: 10px;
   }
 
   .section-title {
     font-size: 14px;
-    margin-top: 15px;
+    margin-top: 14px;
     padding-bottom: 6px;
   }
 
+  .badge {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 8px 9px;
+    margin: 4px 0;
+    border-radius: 10px;
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .badge button {
+    width: auto;
+    min-height: 32px;
+    padding: 5px 8px !important;
+    font-size: 12px;
+    margin: 2px;
+  }
+
+  .lista-agenda {
+    max-height: 240px;
+  }
+
+  .item-agenda {
+    padding: 9px;
+    font-size: 13px;
+    border-radius: 9px;
+  }
+
+  .card-assinatura {
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  .topo-assinatura {
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .topo-assinatura h3 {
+    font-size: 14px;
+  }
+
+  .acoes-assinatura {
+    gap: 6px;
+  }
+
+  .acoes-assinatura button {
+    padding: 7px 6px;
+    font-size: 11px;
+    min-height: 36px;
+  }
+}
+@media (max-width: 360px) {
+  .container {
+    padding: 6px;
+  }
+
+  .header h1 {
+    font-size: 17px;
+  }
+
+  .header img {
+    width: 50px !important;
+  }
+
+  .card {
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  button {
+    font-size: 13px;
+    padding: 9px 10px;
+    min-height: 40px;
+  }
+
+  input,
+  select {
+    font-size: 14px;
+    padding: 10px 9px;
+  }
+
+  .badge {
+    font-size: 11px;
+    padding: 7px 8px;
+  }
+
+  .badge button {
+    min-height: 30px;
+    padding: 4px 7px !important;
+    font-size: 11px;
+  }
 }
 
 /* Safe area para notch/iPhone */
@@ -425,6 +573,42 @@ input, select{
 
 .item-agenda small {
   opacity: 0.7;
+}
+@media (max-width: 480px) {
+  .dashboard {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    align-items: start;
+  }
+
+  .card {
+    height: auto !important;
+    min-height: auto !important;
+    display: block !important;
+  }
+
+  #agendaHoje,
+  #agendaCompleta,
+  #stats {
+    width: 100%;
+    min-height: auto;
+  }
+
+  .lista-agenda {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .item-agenda {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+}
+@media (max-width: 480px) {
+  #cardPacotesPublico {
+    display: none !important;
+  }
 }
 </style>
 </head>
@@ -468,7 +652,7 @@ input, select{
     </div>
 
 </div>
-  <div class="card"style="display:none">
+  <div class="card" id="cardPacotesPublico" style="display:none">
     <h3> Pacotes Disponíveis</h3>
     <div id="listaPacotesPublico"></div>
   </div>
