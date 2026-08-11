@@ -365,11 +365,15 @@ button {
     </div>
     </div>
 
-  <div class="card fade" id="cardCalendario" style="display:none;">
-    <h3>📅 Escolha o dia</h3>
-    <div class="calendario" id="calendario"></div>
-    <p id="dataEscolhida" style="margin-top: 10px; font-weight: bold;"></p>
-  </div>
+ <div class="card fade" id="cardCalendario" style="display:none;">
+  <button class="voltar" onclick="voltarParaProfissionais()">
+    ⬅ Trocar profissional
+  </button>
+
+  <h3>📅 Escolha o dia</h3>
+  <div class="calendario" id="calendario"></div>
+  <p id="dataEscolhida" style="margin-top: 10px; font-weight: bold;"></p>
+</div>
   <div class="card fade" id="profissionais" style="display:none;"></div>
   <div class="card fade" id="horarios" style="display:none;"></div>
   <div class="card fade" id="servicos"></div>
@@ -402,6 +406,21 @@ let horario = "";
 let bloqueios = {};
 let horariosExtras = {};
 
+
+function voltarParaProfissionais() {
+  profissional = "";
+  horario = "";
+  dataSelecionada = "";
+
+  document.getElementById("cardCalendario").style.display = "none";
+  document.getElementById("horarios").style.display = "none";
+  document.getElementById("resumo").style.display = "none";
+  document.getElementById("dataEscolhida").innerText = "";
+
+  document.querySelectorAll(".dia").forEach(el => el.classList.remove("ativo"));
+
+  mostrarProfissionais();
+}
 function escutarHorariosExtras() {
   db.collection("config").doc("horariosExtras")
     .onSnapshot(doc => {
@@ -763,13 +782,16 @@ function escolherProfissional(p) {
   const diaTrancado = bloqueados.includes("__DIA_TRANCADO__");
 
   if (diaTrancado) {
-    grid.innerHTML = `
-      <p style="opacity:0.8; color:#e74c3c;">
-        Este profissional não atende neste dia.
-      </p>
-    `;
-    return;
-  }
+  grid.innerHTML = `
+    <p style="opacity:0.8; color:#e74c3c;">
+      Este profissional não atende neste dia.
+    </p>
+    <button class="voltar" onclick="voltarParaProfissionais()">
+      ⬅ Escolher outro profissional
+    </button>
+  `;
+  return;
+}
      
   todosHorarios.forEach(h => {
   const listaOcupados = Array.isArray(horariosOcupados) ? horariosOcupados : [];
@@ -813,7 +835,12 @@ function escolherProfissional(p) {
 
 
 if (grid.children.length === 0) {
-  grid.innerHTML = `<p style="opacity:0.7">😕 Nenhum horário disponível</p>`;
+  grid.innerHTML = `
+    <p style="opacity:0.7">😕 Nenhum horário disponível</p>
+    <button class="voltar" onclick="voltarParaProfissionais()">
+      ⬅ Escolher outro profissional
+    </button>
+  `;
 }
 }
 

@@ -1290,13 +1290,8 @@ async function trancarDiaProfissional() {
 
   let dados = doc.exists ? doc.data() : {};
 
-  if (!dados[data]) {
-    dados[data] = {};
-  }
-
-  if (!dados[data][prof]) {
-    dados[data][prof] = [];
-  }
+  if (!dados[data]) dados[data] = {};
+  if (!dados[data][prof]) dados[data][prof] = [];
 
   if (!dados[data][prof].includes("__DIA_TRANCADO__")) {
     dados[data][prof].push("__DIA_TRANCADO__");
@@ -1306,6 +1301,7 @@ async function trancarDiaProfissional() {
 
   alert("Dia trancado para este profissional!");
 }
+
 async function destrancarDiaProfissional() {
   const prof = document.getElementById("bloqProf").value.trim();
   const data = document.getElementById("bloqData").value;
@@ -1343,6 +1339,7 @@ async function destrancarDiaProfissional() {
 
   alert("Dia destrancado para este profissional!");
 }
+
 function abrirAdmin() {
   document.getElementById("adminModal").style.display = "flex";
   document.getElementById("senhaAdmin").value = "";
