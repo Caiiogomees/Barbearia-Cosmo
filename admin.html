@@ -683,6 +683,13 @@ input, select{
 
       <button class="warning" onclick="bloquearHorario()">Bloquear</button>
       <button class="success" onclick="desbloquearHorario()">Desbloquear</button>
+      <button class="warning" onclick="trancarDiaProfissional()">
+        Trancar Dia Inteiro
+      </button>
+
+      <button class="success" onclick="destrancarDiaProfissional()">
+        Destrancar Dia Inteiro
+      </button>
       
     <div style="display:none;">
 
@@ -1270,8 +1277,72 @@ async function desbloquearHorarioDireto(data, prof, horario){
 
   await carregarDadosAdmin();
 }
+async function trancarDiaProfissional() {
+  const prof = document.getElementById("bloqProf").value.trim();
+  const data = document.getElementById("bloqData").value;
 
+  if (!prof || !data) {
+    return alert("Preencha o profissional e a data!");
+  }
 
+  const ref = db.collection("config").doc("bloqueios");
+  const doc = await ref.get();
+
+  let dados = doc.exists ? doc.data() : {};
+
+  if (!dados[data]) {
+    dados[data] = {};
+  }
+
+  if (!dados[data][prof]) {
+    dados[data][prof] = [];
+  }
+
+  if (!dados[data][prof].includes("__DIA_TRANCADO__")) {
+    dados[data][prof].push("__DIA_TRANCADO__");
+  }
+
+  await ref.set(dados);
+
+  alert("Dia trancado para este profissional!");
+}
+async function destrancarDiaProfissional() {
+  const prof = document.getElementById("bloqProf").value.trim();
+  const data = document.getElementById("bloqData").value;
+
+  if (!prof || !data) {
+    return alert("Preencha o profissional e a data!");
+  }
+
+  const ref = db.collection("config").doc("bloqueios");
+  const doc = await ref.get();
+
+  if (!doc.exists) {
+    return alert("Não existe bloqueio para remover.");
+  }
+
+  let dados = doc.data();
+
+  if (!dados[data] || !dados[data][prof]) {
+    return alert("Este profissional não está trancado nesta data.");
+  }
+
+  dados[data][prof] = dados[data][prof].filter(
+    item => item !== "__DIA_TRANCADO__"
+  );
+
+  if (dados[data][prof].length === 0) {
+    delete dados[data][prof];
+  }
+
+  if (Object.keys(dados[data]).length === 0) {
+    delete dados[data];
+  }
+
+  await ref.set(dados);
+
+  alert("Dia destrancado para este profissional!");
+}
 function abrirAdmin() {
   document.getElementById("adminModal").style.display = "flex";
   document.getElementById("senhaAdmin").value = "";

@@ -760,7 +760,16 @@ function escolherProfissional(p) {
 
   const horariosOcupados = agenda[dataSelecionada]?.[p] || [];
   const bloqueados = (bloqueios?.[dataSelecionada]?.[p]) || []; 
-  
+  const diaTrancado = bloqueados.includes("__DIA_TRANCADO__");
+
+  if (diaTrancado) {
+    grid.innerHTML = `
+      <p style="opacity:0.8; color:#e74c3c;">
+        Este profissional não atende neste dia.
+      </p>
+    `;
+    return;
+  }
      
   todosHorarios.forEach(h => {
   const listaOcupados = Array.isArray(horariosOcupados) ? horariosOcupados : [];
