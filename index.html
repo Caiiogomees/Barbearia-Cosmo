@@ -30,6 +30,8 @@
   --cinza-claro: #F2F2F2;
   --preto: #0D0D0D;
   --dourado: #ffffff;
+  --destaque: #f0b35a;
+  --verde: #25D366;
 }
 
 
@@ -318,6 +320,33 @@ button {
     padding-top: env(safe-area-inset-top);
   }
 }
+.categorias-servicos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.categoria-btn {
+  text-align: center;
+}
+
+.servico-ativo {
+  background: linear-gradient(45deg, #25d366, #128C7E);
+  color: white;
+}
+@media (max-width: 480px) {
+  .categorias-servicos {
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+  }
+
+  .categoria-btn {
+    font-size: 13px;
+    min-height: 44px;
+    padding: 10px 8px;
+  }
+}
 /* 🔥 BOTÃO INSTAGRAM PREMIUM */
 .instagram-btn {
   width: 100%;
@@ -345,6 +374,70 @@ button {
   transform: scale(1.03);
   opacity: 0.95;
 }
+.categorias-servicos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 14px 0 18px;
+}
+
+.categoria-btn {
+  background: rgba(255,255,255,0.07);
+  color: #f5f5f5;
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: none;
+  text-align: center;
+}
+
+.categoria-btn:hover {
+  background: rgba(166,115,96,0.35);
+}
+
+.categoria-btn.ativa {
+  background: linear-gradient(45deg, #f0b35a, #9b4a2f);
+  color: #111;
+  border: 1px solid rgba(240,179,90,0.9);
+  box-shadow: 0 0 0 2px rgba(240,179,90,0.18);
+}
+
+#listaServicosCategoria h4 {
+  margin: 6px 0 12px;
+  color: var(--destaque);
+  font-size: 18px;
+}
+
+#listaServicosCategoria .opcao {
+  background: linear-gradient(45deg, rgba(166,115,96,0.9), rgba(89,37,27,0.95));
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.servico-ativo {
+  background: linear-gradient(45deg, #25D366, #128C7E) !important;
+  color: #fff;
+  border: 1px solid rgba(37,211,102,0.8) !important;
+  box-shadow: 0 0 0 2px rgba(37,211,102,0.18);
+}
+.categoria-atual {
+  margin: 8px 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(240,179,90,0.12);
+  border: 1px solid rgba(240,179,90,0.35);
+  text-align: left;
+}
+
+.categoria-atual span {
+  display: block;
+  font-size: 11px;
+  opacity: 0.75;
+  margin-bottom: 2px;
+}
+
+.categoria-atual strong {
+  display: block;
+  color: var(--destaque);
+  font-size: 17px;
+}
 </style>
 </head>
 
@@ -368,6 +461,9 @@ button {
  <div class="card fade" id="cardCalendario" style="display:none;">
   <button class="voltar" onclick="voltarParaProfissionais()">
     ⬅ Trocar profissional
+  <button class="voltar" onclick="voltarParaServicos()">
+    ⬅ Escolher mais serviços
+  </button>
   </button>
 
   <h3>📅 Escolha o dia</h3>
@@ -403,10 +499,24 @@ let dataSelecionada = "";
 let nomeServico = "";
 let profissional = "";
 let horario = "";
+let servicosSelecionados = [];
+let valorTotalServicos = 0;
 let bloqueios = {};
 let horariosExtras = {};
 
+function voltarParaServicos() {
+  horario = "";
+  dataSelecionada = "";
 
+  document.getElementById("cardCalendario").style.display = "none";
+  document.getElementById("horarios").style.display = "none";
+  document.getElementById("resumo").style.display = "none";
+  document.getElementById("dataEscolhida").innerText = "";
+
+  document.querySelectorAll(".dia").forEach(el => el.classList.remove("ativo"));
+
+  mostrarServicos();
+}
 function voltarParaProfissionais() {
   profissional = "";
   horario = "";
@@ -628,22 +738,41 @@ const PROFISSIONAIS = [
 ];
 
 //ALTERACOES DE SERVICOS
-const servicos = {
-  "Corte Simples": 25,
-  "Corte Disfarçado":35,
-  "Corte Máq E Tes":35,
-  "Cavanhaque (a partir)":10,
-  "Sobrancelha":10,
-  "Corte + Sobrancelha": 40,
-  "Barba Simples": 15,
-  "Barba Modelada":25,
-  "Corte Disfarçado + Barba": 50,
-  "Pigmentação": 20,
-  "Corte + Pigmentação":55,
-  "Reflexo": 55,
-  "Reflexo + Corte": 90,
-  "Descoloração": 70,
-  "Descoloração + Corte": 100
+const categoriasServicos = {
+  "Cabelo": {
+    "Corte Simples": 25,
+    "Corte Disfarçado": 35,
+    "Corte Máq E Tes": 35,
+    "Pigmentação": 20,
+    "Reflexo": 55,
+    "Descoloração": 70,
+    "Camuflagem cabelo": 30
+  },
+
+  "Barba": {
+    "Cavanhaque (a partir)": 10,
+    "Barba Simples": 15,
+    "Barba Modelada": 25,
+    "Camuflagem barba": 20,
+    "Barboterapia": 30
+  },
+
+  "Serviços Adicionais": {
+    "Sobrancelha": 10,
+    "Depilação nariz/orelha": 15,
+    "Limpeza de pele": 30
+  },
+
+  "Combos": {
+    "Corte + Sobrancelha": 40,
+    "Corte Disfarçado + Barba": 50,
+    "Corte + Pigmentação": 55,
+    "Reflexo + Corte": 90,
+    "Descoloração + Corte": 100,
+    "Depilação nariz e orelha": 25,
+    "Limpeza de pele + Depilação": 50,
+    "Corte + barba + barboterapia": 75
+  }
 };
 
 function mostrarTela(telaId) {
@@ -702,27 +831,127 @@ function resetar() {
 
 function mostrarServicos() {
   mostrarTela("servicos");
+
   const div = document.getElementById("servicos");
   div.style.display = "block";
-  div.innerHTML = "<h3>✂️ Escolha o Serviço</h3>";
-  
-  Object.entries(servicos).forEach(([n, v]) => {
+
+  servicosSelecionados = [];
+  valorTotalServicos = 0;
+  nomeServico = "";
+
+  div.innerHTML = `
+    <h3>✂️ Escolha até 4 serviços</h3>
+    <p style="font-size:13px; opacity:0.8; margin-top:-4px;">
+      Selecione uma categoria para ver os serviços.
+    </p>
+
+    <div class="categorias-servicos" id="categoriasServicos"></div>
+    <div id="listaServicosCategoria"></div>
+
+    <div id="servicosSelecionadosBox" style="display:none; margin-top:15px;"></div>
+
+    <button class="whatsapp" id="btnContinuarServico" onclick="continuarParaData()" style="display:none;">
+      Continuar
+    </button>
+  `;
+
+  const categoriasDiv = document.getElementById("categoriasServicos");
+
+  Object.keys(categoriasServicos).forEach(categoria => {
     const btn = document.createElement("button");
-    btn.className = "opcao";
-    btn.innerText = `${n} - R$${v}`;
-    btn.onclick = () => escolherServico(n);
+    btn.className = "opcao categoria-btn";
+    btn.innerText = categoria;
+    btn.onclick = () => mostrarServicosDaCategoria(categoria);
+    categoriasDiv.appendChild(btn);
+  });
+}
+function mostrarServicosDaCategoria(categoria) {
+  const div = document.getElementById("listaServicosCategoria");
+  const servicos = categoriasServicos[categoria];
+  document.querySelectorAll(".categoria-btn").forEach(btn => {
+    btn.classList.toggle("ativa", btn.innerText === categoria);
+  });
+
+  div.innerHTML = `
+    <div class="categoria-atual">
+      <span>Categoria selecionada</span>
+      <strong>${categoria}</strong>
+    </div>
+  `;
+
+  Object.entries(servicos).forEach(([nome, preco]) => {
+    const selecionado = servicosSelecionados.some(s => s.nome === nome);
+
+    const btn = document.createElement("button");
+    btn.className = selecionado ? "opcao servico-ativo" : "opcao";
+    btn.innerText = `${nome} - R$ ${preco}`;
+    btn.onclick = () => alternarServico(nome, preco, categoria);
+
     div.appendChild(btn);
   });
 }
 
-function escolherServico(nome) {
-  if(!profissional) return alert("Primeiro escolha um barbeiro!");
+function alternarServico(nome, preco, categoriaAtual) {
+  const index = servicosSelecionados.findIndex(s => s.nome === nome);
 
-  nomeServico = nome;
+  if (index >= 0) {
+    servicosSelecionados.splice(index, 1);
+  } else {
+    if (servicosSelecionados.length >= 4) {
+      return alert("Você pode selecionar no máximo 4 serviços.");
+    }
+
+    servicosSelecionados.push({
+      nome,
+      preco
+    });
+  }
+
+  valorTotalServicos = servicosSelecionados.reduce((total, s) => total + s.preco, 0);
+  nomeServico = servicosSelecionados.map(s => s.nome).join(" + ");
+
+  atualizarResumoServicosSelecionados();
+  mostrarServicosDaCategoria(categoriaAtual);
+}
+
+function atualizarResumoServicosSelecionados() {
+  const box = document.getElementById("servicosSelecionadosBox");
+  const btnContinuar = document.getElementById("btnContinuarServico");
+
+  if (servicosSelecionados.length === 0) {
+    box.style.display = "none";
+    btnContinuar.style.display = "none";
+    return;
+  }
+
+  box.style.display = "block";
+  btnContinuar.style.display = "block";
+
+  box.innerHTML = `
+    <div style="background:#111; border:1px solid #A67360; border-radius:12px; padding:12px;">
+      <strong>Selecionados (${servicosSelecionados.length}/4):</strong><br>
+      ${servicosSelecionados.map(s => `• ${s.nome} - R$ ${s.preco}`).join("<br>")}
+      <br><br>
+      <strong style="color:#25D366;">Total: R$ ${valorTotalServicos}</strong>
+    </div>
+  `;
+}
+
+function continuarParaData() {
+  if (!profissional) return alert("Primeiro escolha um barbeiro!");
+
+  if (servicosSelecionados.length === 0) {
+    return alert("Escolha pelo menos 1 serviço.");
+  }
 
   document.getElementById("servicos").style.display = "none";
   document.getElementById("cardCalendario").style.display = "block";
   document.getElementById("horarios").style.display = "none";
+}
+
+function escolherServico(nome) {
+  nomeServico = nome;
+  continuarParaData();
 }
 
 function mostrarProfissionais() {
@@ -751,7 +980,7 @@ function escolherProfissional(p) {
 
   const div = document.getElementById("horarios");
   div.innerHTML = `
-    <button class="voltar" onclick="escolherServico(nomeServico)">⬅ Voltar</button>
+    <button class="voltar" onclick="voltarParaServicos()">⬅ Voltar aos serviços</button>
     <h3>🕒 Horários Disponíveis</h3>
     <div class="horarios-grid" id="gridHorarios"></div>
   `;
@@ -942,8 +1171,9 @@ async function confirmarAgendamento() {
     nome: nome,
     telefone,
     servicos: nomeServico,
+    valorTotal: valorTotalServicos,
+    servicosLista: servicosSelecionados,
     lembreteEnviado: false
-
   });
 
   await ref.set(dados);

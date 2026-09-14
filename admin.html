@@ -21,6 +21,7 @@
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
+
 <style>
 :root{
   --gold:#d46337;
@@ -763,23 +764,86 @@ let bloqueios = {};
 let horariosExtras = {};
 
 const PRECOS = {
-  "Corte":25,
+  "Corte": 25,
   "Corte Simples": 25,
-  "Corte Disfarçado":35,
-  "Corte Máq E Tes":35,
-  "Cavanhaque (a partir)":10,
-  "Sobrancelha":10,
-  "Corte + Sobrancelha": 40,
-  "Barba Simples": 15,
-  "Barba Modelada":25,
-  "Corte Disfarçado + Barba": 50,
+  "Corte Disfarçado": 35,
+  "Corte Máq E Tes": 35,
   "Pigmentação": 20,
-  "Corte + Pigmentação":55,
-  "Reflexo": 50,
-  "Reflexo + Corte": 90,
+  "Reflexo": 55,
   "Descoloração": 70,
-  "Descoloração + Corte": 100
+  "Camuflagem cabelo": 30,
+
+  "Cavanhaque (a partir)": 10,
+  "Barba Simples": 15,
+  "Barba Modelada": 25,
+  "Camuflagem barba": 20,
+  "Barboterapia": 30,
+
+  "Sobrancelha": 10,
+  "Depilação nariz/orelha": 15,
+  "Limpeza de pele": 30,
+
+  "Corte + Sobrancelha": 40,
+  "Corte Disfarçado + Barba": 50,
+  "Corte + Pigmentação": 55,
+  "Reflexo + Corte": 90,
+  "Descoloração + Corte": 100,
+  "Depilação nariz e orelha": 25,
+  "Limpeza de pele + Depilação": 50,
+  "Corte + barba + barboterapia": 75
 };
+function obterServicoAgendamento(h) {
+  if (typeof h === "string") return "Corte";
+  return h.servicos || h.servico || "Corte";
+}
+
+function obterValorAgendamento(h) {
+  if (typeof h === "string") {
+    return PRECOS["Corte"] || 0;
+  }
+
+  if (Number(h.valorTotal) > 0) {
+    return Number(h.valorTotal);
+  }
+
+  if (Array.isArray(h.servicosLista) && h.servicosLista.length > 0) {
+    return h.servicosLista.reduce((total, servico) => {
+      return total + (Number(servico.preco) || 0);
+    }, 0);
+  }
+
+  const servico = obterServicoAgendamento(h);
+  return PRECOS[servico] || 0;
+}
+
+function adicionarResumoServico(resumoServicos, h) {
+  if (typeof h !== "string" && Array.isArray(h.servicosLista) && h.servicosLista.length > 0) {
+    h.servicosLista.forEach(servico => {
+      const nome = servico.nome || "Serviço";
+      const preco = Number(servico.preco) || 0;
+
+      if (!resumoServicos[nome]) {
+        resumoServicos[nome] = { qtd: 0, total: 0 };
+      }
+
+      resumoServicos[nome].qtd++;
+      resumoServicos[nome].total += preco;
+    });
+
+    return;
+  }
+
+  const nome = obterServicoAgendamento(h);
+  const valor = obterValorAgendamento(h);
+
+  if (!resumoServicos[nome]) {
+    resumoServicos[nome] = { qtd: 0, total: 0 };
+  }
+
+  resumoServicos[nome].qtd++;
+  resumoServicos[nome].total += valor;
+}
+
 
 const SENHAS_PROFISSIONAIS = {
   "Thyago": "thyago4143",
@@ -836,11 +900,10 @@ function mostrarFaturamentoProfissional(prof){
 
     lista.forEach(h => {
 
-      const servico = h.servicos || h.servico || "Corte";
+      const servico = obterServicoAgendamento(h);
+      const valor = obterValorAgendamento(h);
 
-      if(!PRECOS[servico]) return;
-
-      const valor = PRECOS[servico];
+      if (valor <= 0) return;
 
       total += valor;
       atendimentos++;
@@ -859,13 +922,13 @@ function mostrarFaturamentoProfissional(prof){
         faturamentoMes += valor;
       }
 
-      // resumo
-      if (!resumoServicos[servico]) {
-        resumoServicos[servico] = { qtd: 0, total: 0 };
+      // resumoc
+      if (
+        dataObj.getMonth() === mesAtual &&
+        dataObj.getFullYear() === anoAtual
+      ) {
+        adicionarResumoServico(resumoServicos, h);
       }
-
-      resumoServicos[servico].qtd++;
-      resumoServicos[servico].total += valor;
 
     });
   }
@@ -875,7 +938,7 @@ function mostrarFaturamentoProfissional(prof){
  
  let resumoHTML = `
     <div style="margin-top:15px;">
-      <h4 style="color:#d4af37;">📊 Seus Serviços</h4>
+      <h4 style="color:#d4af37;">📊 Seus Serviços no mês atual</h4>
   `;
 
   Object.entries(resumoServicos).forEach(([nome, dados]) => {
@@ -1357,6 +1420,7 @@ function loginAdmin() {
     document.getElementById("loginAdmin").style.display = "none";
     document.getElementById("painelAdmin").style.display = "block";
     carregarDadosAdmin();
+    document.dispatchEvent(new Event("financeiro:autorizar"));
     escutarAssinaturas();
     carregarAssinaturas();
   } else {
@@ -1417,10 +1481,9 @@ function mostrarStats() {
 
           const nome = typeof h === "string" ? "Cliente" : h.nome;
 
-          const servico = h.servicos || h.servico || "Corte";
-          if (!PRECOS[servico]) return;
+          const valor = obterValorAgendamento(h);
 
-          const valor = PRECOS[servico];
+          if (valor <= 0) return;
 
           const [ano, mes, dia] = data.split("-").map(Number);
           const dataObj = new Date(ano, mes - 1, dia);
@@ -2162,6 +2225,6 @@ Aguardamos você, até breve!`;
   }
 }
 </script>
-
+<script src="finance-module.js"></script>
 </body>
 </html>
